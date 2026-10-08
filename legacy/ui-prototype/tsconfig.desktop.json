@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["electron/**/*.ts", "server/**/*.ts", "shared/**/*.ts"],
+  "compilerOptions": { "types": ["node", "electron"], "lib": ["ES2022"] }
+}

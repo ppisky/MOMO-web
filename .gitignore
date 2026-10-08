@@ -1,0 +1,62 @@
+# Dependencies and package-manager caches
+node_modules/
+.pnpm-store/
+.pnp.*
+
+# Build and packaging outputs
+dist/
+dist-electron/
+build/
+out/
+release/
+coverage/
+.vite/
+.cache/
+.turbo/
+*.tsbuildinfo
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Runtime data and logs
+*.log
+logs/
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+user-data/
+data/local/
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# OS and editor local state
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+*~
+
+# Preserve upstream production manifests
+!apps/momo/release/
+apps/momo/release/*
+!apps/momo/release/app/
+apps/momo/release/app/*
+!apps/momo/release/app/package.json
+!apps/momo/release/app/package-lock.json

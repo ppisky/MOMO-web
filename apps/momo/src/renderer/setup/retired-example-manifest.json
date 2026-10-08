@@ -1,0 +1,72 @@
+{
+  "chatbox-chat-demo-artifact-1-en": {
+    "name": "Snake Game (Artifact Example)",
+    "type": "chat",
+    "digest": "d9213b6fe7974065f7729c83813480a9f855824de9c24db191751fe65f006d5e"
+  },
+  "mermaid-demo-1-en": {
+    "name": "ChartWhiz",
+    "type": "chat",
+    "digest": "c5edda020449e04318a26a7864cc259e1fa7aabd6cf220b6e0677db94e0584c8"
+  },
+  "justchat-b612-406a-985b-3ab4d2c482ff": {
+    "name": "Just chat",
+    "type": "chat",
+    "digest": "2ac2c20276c0a0db889d4f726ce2c25cf986805943c76b33190056a5de1fc6c8"
+  },
+  "6dafa15e-c72f-4036-ac89-33c09e875bdc": {
+    "name": "Markdown 101 (Example)",
+    "type": "chat",
+    "digest": "efc19805bd5e28c4641559f51e3677f228e3150ca32f900ca33c7e7f13774441"
+  },
+  "e22ab364-4681-4e24-aaba-461ed0fccfd3": {
+    "name": "Travel Guide (Example)",
+    "type": "chat",
+    "digest": "b649393d48695683b7bfe5f1663dce699aaf22d1e3e71fe3c06928b10b1b00cd"
+  },
+  "55d92e88-02af-4c3b-a378-aa0a1970abb1": {
+    "name": "Social Media Influencer (Example)",
+    "type": "chat",
+    "digest": "e6f60471619e3e35142ee5a6c76c5b454d9bedd93ffaf43f6aa48be246c8dce6"
+  },
+  "35df5a96-b612-406a-985b-3ab4d2c481ff": {
+    "name": "Software Developer (Example)",
+    "type": "chat",
+    "digest": "dc6a893cdafebf1bfaec0eaa36023e67b07ce3a0b2a87642aed74d22c045fb8b"
+  },
+  "776eac23-7b4a-40da-91cd-f233bb4742ed": {
+    "name": "Translator (Example)",
+    "type": "chat",
+    "digest": "350defe271f832d18429ac41f83a0ae51a85456b802df5580421fd3480f8a919"
+  },
+  "chatbox-chat-demo-artifact-1-cn": {
+    "name": "贪吃蛇(Artifact Example)",
+    "type": "chat",
+    "digest": "0168094fdc4d83087f0166b99c399b8c3aa232b4ad8ddd25d89cbf4a09c9e77d"
+  },
+  "mermaid-demo-1-cn": {
+    "name": "做图表",
+    "type": "chat",
+    "digest": "3b2632ed36f58950df008dcc84645924f846bbf1272820732ce724ecdee59fae"
+  },
+  "81cfc426-48b4-4a13-ad42-bfcfc4544299": {
+    "name": "小红书文案生成器 (示例)",
+    "type": "chat",
+    "digest": "d1aa2752ccba3779f6343bf5f1323255d05a1ef6a33bd3c0c2f6d1a253cc2e43"
+  },
+  "8732ec08-b23c-4b5e-8f65-d63d808f970f": {
+    "name": "夸夸机 (示例)",
+    "type": "chat",
+    "digest": "29d62d7ad0b77b46a046b2fae3bb3124258969c790044ed597e9f8a568ee95c5"
+  },
+  "3e091ac6-ebfa-42c9-b125-c67ac2d45ee1": {
+    "name": "翻译助手 (示例)",
+    "type": "chat",
+    "digest": "6aea0a5b4840fae9669e95ba93da4a4cca37a32dfaa1257bc8eb76c350a6e251"
+  },
+  "chatbox-chat-demo-image-creator": {
+    "name": "Image Creator (Example)",
+    "type": "picture",
+    "digest": "a47fd39e5e0edccf70aa107e7fe7a997852a3a0db3dff8efab26f132d9feac33"
+  }
+}

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="%VIEWPORT_CONTENT%"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="MOMO" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="MOMO" />
+    <link rel="apple-touch-icon" href="/logo192.png" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <title>MOMO</title>
+    <script>
+      var initialTheme = localStorage.getItem("initial-theme");
+      if (initialTheme === "light" || initialTheme === "dark") {
+        document.documentElement.setAttribute("data-theme", initialTheme);
+        document.documentElement.setAttribute(
+          "data-mantine-color-scheme",
+          initialTheme
+        );
+      }
+    </script>
+    <style>
+      html[data-theme="dark"] {
+        background-color: #201c2b;
+      }
+
+      .splash-screen {
+        position: fixed;
+        z-index: 99999;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 1;
+        background-color: #fff;
+        overflow: hidden;
+      }
+      html[data-theme="dark"] .splash-screen {
+        background-color: #201c2b;
+      }
+
+      .splash-screen-top {
+        flex: 2;
+      }
+      .splash-screen-bottom {
+        flex: 3;
+        width: 100%;
+        position: relative;
+      }
+      .splash-screen-content > svg { width: 72px; height: 72px; }
+      .splash-screen-content {
+        flex: 0 0 auto;
+        position: relative;
+      }
+
+      .splash-screen-logo {
+        display: block;
+        color: #495057;
+      }
+      html[data-theme="dark"] .splash-screen-logo {
+        color: #ced4da;
+      }
+
+      .splash-screen-logo-bg {
+        position: absolute;
+        z-index: -1;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #dee2e6;
+      }
+      html[data-theme="dark"] .splash-screen-logo-bg {
+        color: #495057;
+      }
+
+      .splash-screen-fade-out {
+        opacity: 0; pointer-events: none;
+      }
+
+      @keyframes fade-out {
+        from {
+          opacity: 1;
+        }
+        to {
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <div class="splash-screen">
+      <div class="splash-screen-top"></div>
+      <div class="splash-screen-content">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle cx="39" cy="25" r="23" fill="#6895ee"/><circle cx="25" cy="39" r="23" fill="#8860d6" fill-opacity=".9"/></svg>
+      </div>
+      <div class="splash-screen-bottom" id="log-root"></div>
+    </div>
+    <script type="module" src="./index.tsx"></script>
+  </body>
+</html>

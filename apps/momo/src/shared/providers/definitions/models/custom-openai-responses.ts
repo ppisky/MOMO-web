@@ -1,0 +1,94 @@
+import { createOpenAI } from '@ai-sdk/openai'
+import { extractReasoningMiddleware, wrapLanguageModel } from 'ai'
+import AbstractAISDKModel from '../../../models/abstract-ai-sdk'
+import { fetchRemoteModels } from '../../../models/openai-compatible'
+import type { CallChatCompletionOptions } from '../../../models/types'
+import { createFetchWithProxy } from '../../../models/utils/fetch-proxy'
+import type { ProviderModelInfo } from '../../../types'
+import type { ModelDependencies } from '../../../types/adapters'
+import { normalizeCustomApiEndpoint } from '../../../utils/custom-api-endpoint'
+import { normalizeOpenAIReasoningOptions } from '../../../utils/reasoning-control'
+
+interface Options {
+  apiKey: string
+  apiHost: string
+  apiPath: string
+  model: ProviderModelInfo
+  temperature?: number
+  topP?: number
+  maxOutputTokens?: number
+  stream?: boolean
+  useProxy?: boolean
+}
+
+type FetchFunction = typeof globalThis.fetch
+
+export default class CustomOpenAIResponses extends AbstractAISDKModel {
+  public name = 'Custom OpenAI Responses'
+
+  constructor(
+    public options: Options,
+    dependencies: ModelDependencies
+  ) {
+    super(options, dependencies)
+    const { apiHost, apiPath } = normalizeCustomApiEndpoint(options, '/responses')
+    this.options = { ...options, apiHost, apiPath }
+  }
+
+  protected getCallSettings(options: CallChatCompletionOptions) {
+    return {
+      temperature: this.options.temperature,
+      topP: this.options.topP,
+      maxOutputTokens: this.options.maxOutputTokens,
+      stream: this.options.stream,
+      // Chatbox always sends the full context itself and never relies on the Responses API's
+      // server-side state (previous_response_id / item_reference), which additionally cannot be
+      // resolved across relay/gateway providers. Force store=false so the SDK inlines the full
+      // history and avoids tool-call / item id mismatches (see issue #3728).
+      providerOptions: {
+        openai: {
+          ...normalizeOpenAIReasoningOptions(this.options.model.modelId, options.providerOptions?.openai),
+          store: false,
+        },
+      },
+    }
+  }
+
+  static isSupportTextEmbedding() {
+    return true
+  }
+
+  protected getProvider(_options: CallChatCompletionOptions, fetchFunction?: FetchFunction) {
+    return createOpenAI({
+      apiKey: this.options.apiKey,
+      baseURL: this.options.apiHost,
+      fetch: fetchFunction,
+    })
+  }
+
+  protected getChatModel(options: CallChatCompletionOptions) {
+    const { apiHost, apiPath } = this.options
+    const provider = this.getProvider(options, (_input, init) =>
+      createFetchWithProxy(this.options.useProxy, this.dependencies)(`${apiHost}${apiPath}`, init)
+    )
+    return wrapLanguageModel({
+      model: provider.responses(this.options.model.modelId),
+      middleware: extractReasoningMiddleware({ tagName: 'think' }),
+    })
+  }
+
+  public listModels() {
+    return fetchRemoteModels(
+      {
+        apiHost: this.options.apiHost,
+        apiKey: this.options.apiKey,
+        useProxy: this.options.useProxy,
+      },
+      this.dependencies
+    )
+  }
+
+  protected getImageModel() {
+    return null
+  }
+}

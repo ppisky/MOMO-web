@@ -1,0 +1,88 @@
+productName: MOMO
+appId: app.momo.desktop
+asar: true
+asarUnpack:
+  - "**/*.{node,dll}"
+  - "**/node_modules/libsql/**"
+files:
+  - "dist"
+  # - "!dist/**/*.map"
+  # - "!dist/**/stats.html"
+  - "node_modules"
+  - "!node_modules/@types"
+  - "!node_modules/undici-types"
+  - "package.json"
+
+beforePack: .erb/scripts/ensure-app-deps.cjs
+afterPack: .erb/scripts/after-pack.cjs
+afterSign: .erb/scripts/notarize.js
+
+# releaseInfo:
+#   releaseNotes: See the changelog for details
+
+mac:
+  icon: assets/icon.png
+  notarize: false
+  category: public.app-category.developer-tools
+  target:
+    target: default
+    arch:
+      - arm64
+      - x64
+  type: distribution
+  hardenedRuntime: true
+  entitlements: assets/entitlements.mac.plist
+  entitlementsInherit: assets/entitlements.mac.plist
+  gatekeeperAssess: false
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+win:
+  icon: assets/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - arm64
+  verifyUpdateCodeSignature: false
+  artifactName: ${productName}-${version}-Setup.${ext}
+  signAndEditExecutable: true
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  include: assets/installer.nsh
+
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+        - arm64
+    - target: deb
+      arch:
+        - x64
+        - arm64
+  category: Development
+  artifactName: ${productName}-${version}-${arch}.${ext}
+
+directories:
+  app: release/app
+  buildResources: assets
+  output: release/build
+
+extraResources:
+  - ./assets/**
+  - from: LICENSE
+    to: LICENSE-Chatbox.txt
+  - from: ../../UPSTREAM.md
+    to: UPSTREAM.md
+
+publish: null

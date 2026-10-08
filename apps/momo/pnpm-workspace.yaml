@@ -1,0 +1,48 @@
+packages:
+  - .
+  - packages/*
+  - release/app
+
+# Developers on Windows ARM64 may use both native ARM64 and x64-emulated Node
+# processes against the same checkout. Keep native optional dependencies for
+# both architectures so tools such as esbuild work in either process.
+supportedArchitectures:
+  os:
+    - current
+    - win32
+  cpu:
+    - current
+    - arm64
+    - x64
+
+# Supply chain security: only install packages published at least 7 days ago
+minimumReleaseAge: 10080
+minimumReleaseAgeExclude:
+  - "@ruguoapp/*"
+  - electron@44.7.0
+
+# epub falls back to its pure-JavaScript adm-zip implementation when this
+# deprecated native optional dependency is unavailable.
+ignoredOptionalDependencies:
+  - zipfile
+
+patchedDependencies:
+  fflate@0.8.3: patches/fflate@0.8.3.patch
+  libsql@0.5.22: patches/libsql@0.5.22.patch
+  mdast-util-gfm-autolink-literal@2.0.1: patches/mdast-util-gfm-autolink-literal@2.0.1.patch
+
+nodeDownloadMirrors:
+  release: https://nodejs.org/dist/
+allowBuilds:
+  '@parcel/watcher': true
+  '@sentry/cli': true
+  core-js: true
+  core-js-pure: true
+  electron: true
+  esbuild: true
+  msw: true
+  protobufjs: true
+  sharp: true
+
+overrides: {"@tanstack/router-generator":"1.120.15","@tanstack/router-plugin":"1.120.15","@mastra/libsql":"0.13.2","@mastra/rag":"1.0.8","handlebars":">=4.7.9","convict":">=6.2.5","fast-xml-parser":">=5.5.7","shell-quote":"1.10.0"}
+networkConcurrency: 8
