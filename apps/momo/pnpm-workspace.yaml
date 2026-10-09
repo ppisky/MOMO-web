@@ -1,7 +1,6 @@
 packages:
   - .
   - packages/*
-  - release/app
 
 # Developers on Windows ARM64 may use both native ARM64 and x64-emulated Node
 # processes against the same checkout. Keep native optional dependencies for
@@ -19,7 +18,6 @@ supportedArchitectures:
 minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
   - "@ruguoapp/*"
-  - electron@44.7.0
 
 # epub falls back to its pure-JavaScript adm-zip implementation when this
 # deprecated native optional dependency is unavailable.
@@ -28,7 +26,6 @@ ignoredOptionalDependencies:
 
 patchedDependencies:
   fflate@0.8.3: patches/fflate@0.8.3.patch
-  libsql@0.5.22: patches/libsql@0.5.22.patch
   mdast-util-gfm-autolink-literal@2.0.1: patches/mdast-util-gfm-autolink-literal@2.0.1.patch
 
 nodeDownloadMirrors:
@@ -38,7 +35,6 @@ allowBuilds:
   '@sentry/cli': true
   core-js: true
   core-js-pure: true
-  electron: true
   esbuild: true
   msw: true
   protobufjs: true

@@ -1,8 +1,6 @@
 import { assertMomoRequestUrl } from '@shared/momo-policy'
 import platform from '@/platform'
 import { ApiError, BaseError, NetworkError } from '../../shared/models/errors'
-import { isLocalHost } from '../../shared/utils/network_utils'
-import { desktopDirectRequestFromWindow } from './desktop-direct-request'
 import { handleMobileRequest } from './mobile-request'
 
 interface RequestOptions {
@@ -58,8 +56,6 @@ async function doRequest(url: string, options: RequestOptions): Promise<Response
     let res: Response
     if (platform.type === 'mobile' && useProxy) {
       res = await handleMobileRequest(requestUrl, method, headers, body, signal)
-    } else if (platform.type === 'desktop' && useProxy && !isLocalHost(url)) {
-      res = await desktopDirectRequestFromWindow(requestUrl, method, headers, body, signal)
     } else {
       res = await fetch(requestUrl, { method, headers, body, signal })
     }

@@ -1,52 +1,49 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
-  platform: { type: 'desktop', getVersion: vi.fn(async () => '1.0.0') },
-  desktopDirectRequest: vi.fn(),
+  platform: { type: 'web', getVersion: vi.fn(async () => '1.0.0') },
   mobileRequest: vi.fn(),
 }))
 
 vi.mock('@/platform', () => ({ default: mocks.platform }))
-vi.mock('./desktop-direct-request', () => ({ desktopDirectRequestFromWindow: mocks.desktopDirectRequest }))
 vi.mock('./mobile-request', () => ({ handleMobileRequest: mocks.mobileRequest }))
 
 import { apiRequest } from './request'
 
 describe('provider API request routing', () => {
   afterEach(() => {
-    mocks.platform.type = 'desktop'
+    mocks.platform.type = 'web'
     mocks.platform.getVersion.mockClear()
-    mocks.desktopDirectRequest.mockReset()
     mocks.mobileRequest.mockReset()
     vi.unstubAllGlobals()
   })
 
-  it('uses the main-process direct transport for remote desktop targets when compatibility is enabled', async () => {
+  it('sends credentials and payload only to the configured provider using browser fetch', async () => {
     const response = new Response('ok')
-    mocks.desktopDirectRequest.mockResolvedValue(response)
-    const rendererFetch = vi.fn()
+    const rendererFetch = vi.fn().mockResolvedValue(response)
     vi.stubGlobal('fetch', rendererFetch)
-
+    const controller = new AbortController()
     await expect(
-      apiRequest.post('https://provider.example/v1/chat', { authorization: 'Bearer secret' }, '{"stream":true}', {
+      apiRequest.post('https://provider.example/v1/chat', { authorization: 'Bearer test-only' }, '{"stream":true}', {
+        signal: controller.signal,
         useProxy: true,
         retry: 0,
       })
     ).resolves.toBe(response)
-
-    expect(mocks.desktopDirectRequest).toHaveBeenCalledWith(
+    expect(rendererFetch).toHaveBeenCalledWith(
       'https://provider.example/v1/chat',
-      'POST',
-      expect.any(Headers),
-      '{"stream":true}',
-      undefined
+      expect.objectContaining({
+        method: 'POST',
+        body: '{"stream":true}',
+        signal: controller.signal,
+      })
     )
-    const headers = mocks.desktopDirectRequest.mock.calls[0][2] as Headers
+    const headers = rendererFetch.mock.calls[0][1].headers as Headers
+    expect(headers.get('Authorization')).toBe('Bearer test-only')
     expect(headers.get('CHATBOX-TARGET-URI')).toBeNull()
-    expect(rendererFetch).not.toHaveBeenCalled()
   })
 
-  it('keeps local desktop targets in the renderer', async () => {
+  it('calls local providers directly from the browser', async () => {
     const response = new Response('ok')
     const rendererFetch = vi.fn().mockResolvedValue(response)
     vi.stubGlobal('fetch', rendererFetch)
@@ -59,28 +56,30 @@ describe('provider API request routing', () => {
       'http://127.0.0.1:11434/api/tags',
       expect.objectContaining({ method: 'GET' })
     )
-    expect(mocks.desktopDirectRequest).not.toHaveBeenCalled()
   })
 
-  it('preserves the ApiError contract for failed desktop direct responses', async () => {
-    mocks.desktopDirectRequest.mockResolvedValue(new Response('upstream unavailable', { status: 503 }))
+  it('preserves upstream errors without retrying', async () => {
+    const rendererFetch = vi.fn().mockResolvedValue(new Response('upstream unavailable', { status: 503 }))
+    vi.stubGlobal('fetch', rendererFetch)
 
-    const request = apiRequest.get('https://provider.example/v1/models', {}, { useProxy: true, retry: 0 })
+    const request = apiRequest.get('https://provider.example/v1/models', {}, { useProxy: true, retry: 3 })
 
     await expect(request).rejects.toMatchObject({
       message: 'API Error: Status Code 503',
       responseBody: 'upstream unavailable',
     })
+    expect(rendererFetch).toHaveBeenCalledTimes(1)
   })
 
-  it('preserves AbortError without retrying a cancelled desktop direct request', async () => {
+  it('preserves cancellation without retrying', async () => {
     const abortError = Object.assign(new Error('The operation was aborted'), { name: 'AbortError' })
-    mocks.desktopDirectRequest.mockRejectedValue(abortError)
+    const rendererFetch = vi.fn().mockRejectedValue(abortError)
+    vi.stubGlobal('fetch', rendererFetch)
 
     const request = apiRequest.get('https://provider.example/v1/models', {}, { useProxy: true, retry: 3 })
 
     await expect(request).rejects.toBe(abortError)
-    expect(mocks.desktopDirectRequest).toHaveBeenCalledTimes(1)
+    expect(rendererFetch).toHaveBeenCalledTimes(1)
   })
 
   it('never relays web API credentials through Chatbox even with a legacy proxy setting', async () => {
@@ -98,14 +97,12 @@ describe('provider API request routing', () => {
     const headers = rendererFetch.mock.calls[0][1].headers as Headers
     expect(headers.get('CHATBOX-TARGET-URI')).toBeNull()
     expect(mocks.platform.getVersion).not.toHaveBeenCalled()
-    expect(mocks.desktopDirectRequest).not.toHaveBeenCalled()
   })
   it('rejects a direct Chatbox target before any transport is called', async () => {
     const rendererFetch = vi.fn()
     vi.stubGlobal('fetch', rendererFetch)
     await expect(apiRequest.get('https://api.chatboxai.app/models', {}, { useProxy: true })).rejects.toThrow('MOMO')
     expect(rendererFetch).not.toHaveBeenCalled()
-    expect(mocks.desktopDirectRequest).not.toHaveBeenCalled()
     expect(mocks.mobileRequest).not.toHaveBeenCalled()
   })
 })

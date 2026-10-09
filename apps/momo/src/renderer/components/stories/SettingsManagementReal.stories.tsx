@@ -482,36 +482,6 @@ function SeedSettingsManagement() {
     testMineruConnection: async () => ({ success: true }),
   })
 
-  const win = window as typeof window & {
-    electronAPI?: {
-      invoke: (channel: string, ...args: unknown[]) => Promise<unknown>
-    }
-  }
-  win.electronAPI = {
-    ...win.electronAPI,
-    invoke: (channel: string) => {
-      if (channel === 'skills:discover') {
-        return Promise.resolve(installedSkills)
-      }
-      if (channel === 'skills:get-directory') {
-        return Promise.resolve('/Users/themez/.codex/skills')
-      }
-      if (channel === 'skills:scan-repo') {
-        return Promise.resolve(detectedSkills)
-      }
-      if (channel === 'skills:install' || channel === 'skills:install-marketplace') {
-        return Promise.resolve({ success: true, skillName: 'repo-code-review' })
-      }
-      if (channel === 'skills:delete') {
-        return Promise.resolve({ success: true })
-      }
-      if (channel === 'skills:check-update') {
-        return Promise.resolve({ hasUpdate: true, currentHash: 'abc', latestHash: 'def' })
-      }
-      return Promise.resolve(null)
-    },
-  }
-
   return null
 }
 

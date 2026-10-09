@@ -12,7 +12,7 @@ const config: StorybookConfig = {
   viteFinal: async (config, { configType }) => {
     const nodeEnv = configType === 'PRODUCTION' ? 'production' : 'development'
     config.envDir = __dirname
-    // 给 Storybook 独立的 Vite 依赖缓存目录。否则它与 electron-vite 渲染进程 dev server
+    // 给 Storybook 独立的 Vite 依赖缓存目录。否则它与网页 dev server
     // 共用默认的 node_modules/.vite，两个 server 会互相打断依赖预优化：打开 UI inventory
     // 预览触发 Storybook 重优化依赖、改写该目录，渲染 server 检测到缓存失效后整页重载，
     // 表现为 dev app 在访问预览时“自动重启”。

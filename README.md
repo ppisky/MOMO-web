@@ -1,14 +1,10 @@
-# MOMO
+# MOMO Web
 
-基于 [Chatbox](https://github.com/chatboxai/chatbox) 源码的紫色角色对话应用。当前源码位于 apps/momo；旧 Remix + assistant-ui 原型保存在 legacy/ui-prototype。
+基于 [Chatbox](https://github.com/chatboxai/chatbox) 源码的紫色角色对话网页，活动源码在 `apps/momo`。2026-10-09 按用户决定回到本仓库，移除 Electron，先调好原网页；MOMO-app 开发与 ron 兼容暂缓。沿用原来的页面和业务操作。
 
-应用内标识是无描边的重叠双圆；Windows 应用与任务栏使用用户提供的蓝紫毛玻璃图标。不添加装饰性动画。
+## 运行
 
-## 开发
-
-使用 pnpm **10.33.0**，apps/momo 的开发运行时锁定 Node.js **26.11.1**。应用的 devEngines.runtime 允许 pnpm 自动提供运行时；根目录启动器支持系统 Node 22.20+，不覆盖系统 Node。
-
-依次运行：
+使用 pnpm **10.33.0**。应用运行时锁定 Node.js **26.11.1**，由 pnpm 的 devEngines.runtime 提供；根目录启动器支持系统 Node 22.20+。
 
 ```sh
 pnpm install
@@ -16,38 +12,35 @@ pnpm setup
 pnpm dev
 ```
 
-dev 启动 Electron 热更新。只调试画面时运行 pnpm dev:web，打开 http://127.0.0.1:1212/。Web 预览不包含桌面文件、托盘与本地工具能力。
-
-如果全局 pnpm 是其他版本，首次用 `npx --yes pnpm@10.33.0 install`，之后 Windows 可用仓库内固定版本：`./node_modules/.bin/pnpm.cmd setup`、`./node_modules/.bin/pnpm.cmd dev`。本机已完成安装。用 `./node_modules/.bin/pnpm.cmd --dir apps/momo exec node --version` 检查应用运行时。
+打开 http://127.0.0.1:1212/。dev 直接启动原网页，不需要 Electron。若全局 pnpm 版本不同，首次用 `npx --yes pnpm@10.33.0 install`，之后 Windows 可用 `./node_modules/.bin/pnpm.cmd` 执行上述命令。
 
 ```sh
 pnpm typecheck
-pnpm test:brand
+pnpm check:web
+pnpm test:roleplay
+pnpm test:settings
 pnpm build
-pnpm desktop
-pnpm package
+pnpm preview
 ```
 
-desktop 启动生产构建；package 在完成 build 后生成 Windows x64 目录包：apps/momo/release/build/win-unpacked/MOMO.exe，整个目录必须一起分发。未配置签名、发布和自动更新。
+生产文件输出到 `apps/momo/dist/web`。preview 同样监听 127.0.0.1:1212，先停止占用该端口的 dev。静态服务器需对页面路由回退到 index.html，按根目录部署。桌面启动、安装包、自动更新和 Electron 依赖已删除。
 
-界面只保留对话、角色和设置。支持本地角色设定、头像与背景、手动故事记忆、回复重试、对话分支、新篇章、归档，以及自定义 API 和本地模型连接。
+## 当前能力和边界
 
-服务商列表初始为空。进入设置 → 服务商 → 添加 → 添加自定义服务商，选择 API 协议，再自行填写地址、可选密钥与模型 ID。仅提供 OpenAI Chat Completions、OpenAI Responses、Anthropic Messages、Google Gemini 协议适配，不内置任何服务商地址、推荐模型或兼容配置。获取模型只访问填写的地址。
+保留原版角色、头像与背景、手动故事记忆、聊天、重试、分支、新篇章、归档/恢复和自定义 API 连接。语言保留简体中文、繁体中文、日语、韩语和英文。
 
-模型参数是独立设置页，管理温度、Top P、最大输出 Token 数、上下文消息上限和流式输出，用于新对话。最大输出 Token 数默认显示 0，表示不指定应用层输出上限，使用 API 默认值；手动填写正数才指定上限。没有全局默认对话模型；对话中手动选择模型，新对话可沿用上次仍有效的自定义模型。已有对话保持各自参数，退休的内置服务商记录需要手动重新配置。
+服务商列表初始为空，在设置中添加自定义服务商、协议、地址、可选密钥和模型 ID。浏览器直接请求所填地址，服务端须允许当前网页来源的 CORS。不提供公共转发代理，不向 Chatbox 发送模型凭据。保留 OpenAI Chat Completions、OpenAI Responses、Anthropic Messages、Google Gemini 协议适配；真实供应商按各服务单独验证。
 
-界面语言仅保留简体中文、繁体中文、日语、韩语和英文。其他语言的历史偏好回退为英文；角色内容与聊天正文不自动翻译。
+当前网页沿用 Chatbox 业务服务和浏览器 IndexedDB，**尚未接入 MOMO-core**。数据随网页 origin（协议、主机、端口）隔离，不读取 Electron 的本地数据目录，也不新增旧桌面数据导入。现有网页数据保留。
 
-不提供账号登录、Chatbox 授权与订阅、在线角色市场、内置云模型、联网搜索、画图、知识库、MCP、技能与工作模式。相关入口和后台初始化已停用；部分上游类型与源码仅保留历史数据兼容，不代表可用功能。
+Core 角色完整字段与真实开场白、独立记忆/NSG、空间、参数组及固定 Enter/Shift+Enter 规则仍须逐项落实。原页现有的参数零值说明、会话参数副本和快捷键设置是待调整项；开场白参与真实历史和上下文的决定不再待确认。
 
-新安装不写入示例对话。已有安装首次升级时，根据原始 ID、标题和消息摘要识别未修改的文本示例，先保留本地备份再移除；续写、改名、修改设定或含附件的对话保留。真实聊天和自建角色不会批量删除。
+账号、订阅、在线角色市场、内置云模型、搜索、画图、知识库、MCP、技能和工作模式仍停用。残留上游类型或组件不代表可用能力，本地命令/stdio 不会伪装成浏览器功能。
 
-默认使用独立的 %APPDATA%/MOMO-Chatbox 数据目录，不读取原 Chatbox 数据；上游统计和自动更新关闭，网络边界阻断 Chatbox 服务域名。
-
-- [来源、许可和定制范围](UPSTREAM.md)
 - [当前架构](docs/architecture.md)
-- [开发约定](docs/development.md)
-- [源码接入决策](docs/decisions/0003-chatbox-fork.md)
-- [角色对话精简决策](docs/decisions/0004-roleplay-scope.md)
-- [自定义连接与语言范围](docs/decisions/0005-custom-providers.md)
+- [开发和验收](docs/development.md)
+- [网页优先决定与产品边界](docs/decisions/0006-web-first.md)
+- [验证记录](docs/validation.md)
+- [后续计划](docs/roadmap.md)
+- [来源和定制范围](UPSTREAM.md)
 - [GPL-3.0 许可证](LICENSE)

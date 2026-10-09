@@ -5,7 +5,7 @@
  * plugin during dev/build/test. `pnpm check` has no Vite run, so without this
  * the type check fails on a missing module plus one error per route file — the
  * reason CI's type-check step used to be non-blocking. Keep the options in sync
- * with the plugin config in electron.vite.config.ts and vitest.config.ts.
+ * with the plugin config in vite.config.web.ts and vitest.config.ts.
  *
  * @tanstack/router-generator is a dependency of @tanstack/router-plugin and
  * resolves from the root node_modules because .npmrc pins node-linker=hoisted.

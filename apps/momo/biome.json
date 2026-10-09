@@ -41,13 +41,11 @@
       "packages/**",
       "test/integration/**/*.ts",
       "test/e2e/**/*.ts",
-      "!src/main/mcp/shell-env.cjs",
       "!src/renderer/components/icons/**",
       "biome.json",
       "*.config.js",
       "*.config.ts",
-      "*.config.mjs",
-      "!erb/**"
+      "*.config.mjs"
     ]
   },
   "linter": {
@@ -84,13 +82,11 @@
       "packages/**",
       "test/integration/**/*.ts",
       "test/e2e/**/*.ts",
-      "!src/main/mcp/shell-env.cjs",
       "!src/renderer/components/icons/**",
       "biome.json",
       "*.config.js",
       "*.config.ts",
-      "*.config.mjs",
-      "!erb/**"
+      "*.config.mjs"
     ]
   },
   "javascript": {

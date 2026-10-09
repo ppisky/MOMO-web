@@ -39,48 +39,45 @@ export function subscribeSkillsChanged(listener: () => void): () => void {
   }
 }
 
+// These interfaces remain for retired upstream components; no native operations run in the browser.
+function unavailable(): Promise<never> {
+  return Promise.reject(new Error('Local skills and command execution are unavailable in MOMO Web'))
+}
+
 export const skillsController = {
   discoverSkills(): Promise<SkillInfo[]> {
-    return window.electronAPI.invoke('skills:discover')
+    return unavailable()
   },
 
   loadSkill(
-    name: string
+    _name: string
   ): Promise<{ metadata: SkillMetadata; body: string; skillRoot?: string; files?: string[] } | null> {
-    return window.electronAPI.invoke('skills:load', name)
+    return unavailable()
   },
 
   getSkillsDirectory(): Promise<string> {
-    return window.electronAPI.invoke('skills:get-directory')
+    return unavailable()
   },
 
-  async openSkillsDirectory(): Promise<void> {
-    await window.electronAPI.invoke('skills:open-directory')
+  openSkillsDirectory(): Promise<void> {
+    return unavailable()
   },
 
-  executeScript(skillName: string, scriptName: string, args?: string[]): Promise<SkillScriptResult> {
-    return window.electronAPI.invoke('skills:execute-script', { skillName, scriptName, args })
+  executeScript(_skillName: string, _scriptName: string, _args?: string[]): Promise<SkillScriptResult> {
+    return unavailable()
   },
 
-  async installSkill(owner: string, repo: string, skillPath: string): Promise<SkillInstallResult> {
-    const result = await window.electronAPI.invoke('skills:install', { owner, repo, skillPath })
-    if (result.success) notifySkillsChanged()
-    return result
+  installSkill(_owner: string, _repo: string, _skillPath: string): Promise<SkillInstallResult> {
+    return unavailable()
   },
 
-  async installFromSandbox(sandboxPath: string, sessionId?: string, sourceInfo?: string): Promise<SkillInstallResult> {
-    const result = await window.electronAPI.invoke('skills:install-from-sandbox', {
-      sandboxPath,
-      sessionId,
-      sourceInfo,
-    })
-    if (result.success) notifySkillsChanged()
-    return result
+  installFromSandbox(_sandboxPath: string, _sessionId?: string, _sourceInfo?: string): Promise<SkillInstallResult> {
+    return unavailable()
   },
 
   userExec(
-    command: string,
-    options?: {
+    _command: string,
+    _options?: {
       cwd?: string
       timeout?: number
       sessionId?: string
@@ -92,60 +89,48 @@ export const skillsController = {
       injectBundledNode?: boolean
     }
   ): Promise<SkillScriptResult> {
-    return window.electronAPI.invoke('skills:user-exec', { command, ...options })
+    return unavailable()
   },
 
-  resolveUserExecCwd(options: { cwd?: string; baseCwd?: string }): Promise<string> {
-    return window.electronAPI.invoke('skills:resolve-user-exec-cwd', options)
+  resolveUserExecCwd(_options: { cwd?: string; baseCwd?: string }): Promise<string> {
+    return unavailable()
   },
 
-  resolveCommandRetry(options: {
+  resolveCommandRetry(_options: {
     sessionId: string
     retryOf?: string
     command: string
     cwd: string
     shell: 'bash' | 'powershell'
   }): Promise<{ valid: true; retryOf: string } | { valid: false; error: string }> {
-    return window.electronAPI.invoke('skills:resolve-command-retry', options)
+    return unavailable()
   },
 
-  cancelUserExec(options: { sessionId?: string; toolCallId: string }): Promise<{ killed: boolean }> {
-    return window.electronAPI.invoke('skills:user-exec-cancel', options)
+  cancelUserExec(_options: { sessionId?: string; toolCallId: string }): Promise<{ killed: boolean }> {
+    return unavailable()
   },
 
-  async installMarketplaceSkill(skill: MarketplaceSkill): Promise<SkillInstallResult> {
-    const result = await window.electronAPI.invoke('skills:install-marketplace', skill)
-    if (result.success) notifySkillsChanged()
-    return result
+  installMarketplaceSkill(_skill: MarketplaceSkill): Promise<SkillInstallResult> {
+    return unavailable()
   },
 
-  async deleteSkill(name: string): Promise<{ success: boolean; error?: string }> {
-    const result = await window.electronAPI.invoke('skills:delete', name)
-    if (result.success) notifySkillsChanged()
-    return result
+  deleteSkill(_name: string): Promise<{ success: boolean; error?: string }> {
+    return unavailable()
   },
 
-  scanRepo(owner: string, repo: string): Promise<Array<{ name: string; path: string; description?: string }>> {
-    return window.electronAPI.invoke('skills:scan-repo', owner, repo)
+  scanRepo(_owner: string, _repo: string): Promise<Array<{ name: string; path: string; description?: string }>> {
+    return unavailable()
   },
 
-  checkForUpdate(name: string): Promise<SkillUpdateResult> {
-    return window.electronAPI.invoke('skills:check-update', name)
+  checkForUpdate(_name: string): Promise<SkillUpdateResult> {
+    return unavailable()
   },
 
   checkForUpdatesBatch(): Promise<Record<string, { hasUpdate: boolean; error?: string }>> {
-    return window.electronAPI.invoke('skills:check-updates-batch')
+    return unavailable()
   },
 
-  /** 触发后端内置 skill 同步（main 进程拉取 manifest 并按内容 hash 更新本地快照）。 */
-  async syncBuiltinSkills(lang?: string): Promise<{ changed: boolean }> {
-    const result = await window.electronAPI.invoke('skills:sync-builtin', lang)
-    if (result?.changed) notifySkillsChanged()
-    return result ?? { changed: false }
+  syncBuiltinSkills(_lang?: string): Promise<{ changed: boolean }> {
+    return unavailable()
   },
-}
-
-// 监听 main 进程后台同步内置 skill 完成（有更新）的推送，刷新 renderer 侧 skill 列表与工具缓存
-if (typeof window !== 'undefined' && window.electronAPI?.onSkillsBuiltinUpdated) {
-  window.electronAPI.onSkillsBuiltinUpdated(() => notifySkillsChanged())
 }

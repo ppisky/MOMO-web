@@ -13,7 +13,6 @@ import { StreamableHTTPClientTransport as LegacyHTTPClientTransport } from '@mod
 import { type JSONValue as AIToolJSONValue, dynamicTool, jsonSchema, type ToolSet } from 'ai'
 import Emittery from 'emittery'
 import { isEqual } from 'lodash'
-import { IPCStdioTransport } from './ipc-stdio-transport'
 import { MCPOAuthProvider } from './oauth-provider'
 import type { MCPProtocolMode, MCPServerConfig, MCPServerStatus } from './types'
 
@@ -162,8 +161,7 @@ async function connectStreamableHttpClient(
 async function createAutoClient(config: MCPServerConfig, name: string, interactive: boolean): Promise<MCPClient> {
   const transportConfig = config.transport
   if (transportConfig.type === 'stdio') {
-    const transport = await IPCStdioTransport.create(transportConfig)
-    return connectNegotiatingClient(transport, name, 'auto')
+    throw new Error('MCP stdio is unavailable in the browser')
   }
 
   const url = new URL(transportConfig.url)
@@ -199,27 +197,7 @@ async function createAutoClient(config: MCPServerConfig, name: string, interacti
 
 async function createLegacyClient(transportConfig: TransportConfig, name: string): Promise<MCPClient> {
   if (transportConfig.type === 'stdio') {
-    const transport = await IPCStdioTransport.create(transportConfig)
-    let errorMessage = ''
-    try {
-      return createLegacyClientAdapter(
-        await createMCPClient({
-          name,
-          transport,
-          onUncaughtError(error: unknown) {
-            console.error('mcp:client:onUncaughtError', error)
-            errorMessage += (error as Error).message
-          },
-        })
-      )
-    } catch (err) {
-      transport.close().catch(console.error)
-      let message = (err as Error).message
-      if (errorMessage && !message.includes(errorMessage)) {
-        message += `\n${errorMessage}`
-      }
-      throw new Error(message, { cause: err })
-    }
+    throw new Error('MCP stdio is unavailable in the browser')
   }
   if (transportConfig.type === 'http') {
     try {

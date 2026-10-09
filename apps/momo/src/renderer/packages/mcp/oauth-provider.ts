@@ -5,9 +5,8 @@ import type {
   StoredOAuthClientInformation,
   StoredOAuthTokens,
 } from '@modelcontextprotocol/client'
-import { type MCPAuthorizationCallback, OAuthIpcChannels } from '@shared/oauth'
+import type { MCPAuthorizationCallback } from '@shared/oauth'
 import { t } from 'i18next'
-import platform from '@/platform'
 import { settingsStore } from '@/stores/settingsStore'
 
 // Fixed loopback port: it is part of the redirect_uri registered with every authorization server,
@@ -108,13 +107,13 @@ export class MCPOAuthProvider implements OAuthClientProvider {
     this.update(cleared)
   }
 
-  async redirectToAuthorization(authorizationUrl: URL) {
+  redirectToAuthorization(_authorizationUrl: URL): Promise<void> {
     if (!this.interactive) {
-      throw new Error(t('Authorization required. Open this server in MCP settings and click Connect to sign in.')!)
+      return Promise.reject(
+        new Error(t('Authorization required. Open this server in MCP settings and click Connect to sign in.'))
+      )
     }
-    // Start listening before the browser opens so the redirect can never race the server.
-    this.pendingCallback = window.electronAPI.invoke(OAuthIpcChannels.MCP_WAIT_CALLBACK, MCP_OAUTH_CALLBACK_PORT)
-    await platform.openLink(authorizationUrl.toString())
+    return Promise.reject(new Error('MCP loopback OAuth is unavailable in the browser'))
   }
 
   /** Resolves with the redirect parameters once the user finishes in the browser; undefined if no redirect was started. */

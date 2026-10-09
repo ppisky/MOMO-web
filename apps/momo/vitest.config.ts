@@ -39,7 +39,6 @@ export default defineConfig(({ mode }) => {
         '**/node_modules/**',
         '**/dist/**',
         'release/**',
-        '.erb/**',
         ...(isModelProviderRun ? [] : ['test/integration/model-provider/**']),
       ],
       setupFiles: [],
@@ -55,8 +54,6 @@ export default defineConfig(({ mode }) => {
         src: path.resolve(__dirname, './src'),
         '@shared': path.resolve(__dirname, 'src/shared'),
       },
-      // Vite defaults plus `.cjs`, so vendored CommonJS modules (e.g. src/main/mcp/shell-env.cjs)
-      // resolve from extensionless imports the same way they do in the electron-vite build.
       extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json', '.cjs'],
     },
   }

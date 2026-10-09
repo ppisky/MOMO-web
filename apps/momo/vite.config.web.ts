@@ -1,37 +1,47 @@
-/**
- * Standalone Vite config for web-only development.
- *
- * Usage:
- *   npx vite --config vite.config.web.ts
- *
- * This starts the renderer dev server on http://localhost:1212 and LAN IPs without
- * launching Electron, which is useful for:
- *   - Headless / CI environments where Electron cannot run
- *   - Faster iteration on renderer-only changes
- *   - Web platform testing
- *
- * It reuses the same plugins and settings as the renderer section in
- * electron.vite.config.ts to keep behavior consistent.
- */
-
 import path from 'node:path'
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
-import { dvhToVh, injectBaseTag } from './electron.vite.config'
+import { defineConfig, type Plugin } from 'vite'
 
-export default defineConfig({
-  root: 'src/renderer',
+function browserBoundary(): Plugin {
+  return {
+    name: 'momo-browser-boundary',
+    resolveId(source) {
+      if (/^(?:electron(?:\/|$)|electron-|@electron\/)/.test(source)) {
+        this.error('Desktop dependency cannot enter the web build: ' + source)
+      }
+    },
+    generateBundle() {
+      for (const id of this.getModuleIds()) {
+        if (/\/src\/(?:main|preload)\//.test(id.replaceAll('\\', '/'))) {
+          this.error('Desktop source cannot enter the web build: ' + id)
+        }
+      }
+    },
+  }
+}
+
+export default defineConfig(({ mode }) => ({
+  root: path.resolve(__dirname, 'src/renderer'),
   plugins: [
+    browserBoundary(),
     TanStackRouterVite({
       target: 'react',
       autoCodeSplitting: true,
       routesDirectory: './src/renderer/routes',
       generatedRouteTree: './src/renderer/routeTree.gen.ts',
     }),
-    react({}),
-    dvhToVh(),
-    injectBaseTag(),
+    react(),
+    {
+      name: 'momo-web-metadata',
+      transformIndexHtml() {
+        return [{
+          tag: 'script',
+          children: 'window.chatbox_release_date=' + JSON.stringify(new Date().toISOString().slice(0, 10)) + ';',
+          injectTo: 'head-prepend',
+        }]
+      },
+    },
   ],
   resolve: {
     alias: {
@@ -39,31 +49,37 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, 'src/shared'),
     },
   },
-  server: {
-    host: process.env.DEV_HOST || '127.0.0.1',
-    port: Number(process.env.DEV_PORT) || 1212,
-  },
+  server: { host: '127.0.0.1', port: 1212, strictPort: true },
+  preview: { host: '127.0.0.1', port: 1212, strictPort: true },
   define: {
-    'process.type': '"renderer"',
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
-    'process.env.CHATBOX_BUILD_TARGET': JSON.stringify(process.env.CHATBOX_BUILD_TARGET || 'unknown'),
+    'process.type': JSON.stringify('renderer'),
+    'process.env.NODE_ENV': JSON.stringify(mode === 'production' ? 'production' : 'development'),
+    'process.env.CHATBOX_BUILD_TARGET': JSON.stringify('unknown'),
     'process.env.CHATBOX_BUILD_PLATFORM': JSON.stringify('web'),
-    'process.env.USE_LOCAL_API': JSON.stringify(process.env.USE_LOCAL_API || ''),
-    'process.env.USE_BETA_API': JSON.stringify(process.env.USE_BETA_API || ''),
-    'process.env.USE_NEWDB_API': JSON.stringify(process.env.USE_NEWDB_API || ''),
-    'process.env.USE_LOCAL_CHATBOX': JSON.stringify(process.env.USE_LOCAL_CHATBOX || ''),
-    'process.env.USE_BETA_CHATBOX': JSON.stringify(process.env.USE_BETA_CHATBOX || ''),
+    'process.env.CHATBOX_BUILD_CHANNEL': JSON.stringify('unknown'),
+    ...Object.fromEntries(
+      ['USE_LOCAL_API', 'USE_BETA_API', 'USE_NEWDB_API', 'USE_LOCAL_CHATBOX', 'USE_BETA_CHATBOX']
+        .map((key) => ['process.env.' + key, JSON.stringify(process.env[key] || '')])
+    ),
   },
   css: {
-    modules: {
-      generateScopedName: '[name]__[local]___[hash:base64:5]',
-    },
-    postcss: './postcss.config.cjs',
+    modules: { generateScopedName: '[name]__[local]___[hash:base64:5]' },
+    postcss: path.resolve(__dirname, 'postcss.config.js'),
   },
-  optimizeDeps: {
-    include: ['mermaid'],
-    esbuildOptions: {
-      target: 'es2015',
+  build: {
+    outDir: path.resolve(__dirname, 'dist/web'),
+    emptyOutDir: true,
+    target: 'es2020',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          const normalized = id.replaceAll('\\', '/')
+          if (/\/node_modules\/(?:@ai-sdk\/|ai\/)/.test(normalized)) return 'vendor-ai'
+          if (/\/node_modules\/(?:@mantine\/|@tabler\/)/.test(normalized)) return 'vendor-ui'
+        },
+      },
     },
   },
-})
+  optimizeDeps: { include: ['mermaid'] },
+}))

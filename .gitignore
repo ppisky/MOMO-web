@@ -52,11 +52,3 @@ Desktop.ini
 *.swp
 *.swo
 *~
-
-# Preserve upstream production manifests
-!apps/momo/release/
-apps/momo/release/*
-!apps/momo/release/app/
-apps/momo/release/app/*
-!apps/momo/release/app/package.json
-!apps/momo/release/app/package-lock.json

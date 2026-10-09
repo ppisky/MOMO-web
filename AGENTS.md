@@ -10,7 +10,7 @@
 ## 修改原则
 
 - 开始修改前阅读 README.md 及与任务有关的 docs/ 文档。
-- 当前基线为 apps/momo 中的 Chatbox 完整源码（Electron + React + TypeScript）；用户已明确决定全量接入，见 docs/decisions/0003-chatbox-fork.md。旧原型保留在 legacy，后续替换仍需用户决策。
+- 当前工作回到 apps/momo 的原 Web 页面。用户已授权移除 Electron，先完成独立网页，ron 兼容暂缓，见 docs/decisions/0006-web-first.md。保留原页面与业务成果，不用 MOMO-app 精简页面覆盖。旧原型仍保留在 legacy。
 - 使用中文编写项目说明与开发文档，代码标识符使用英文。
 - 按当前任务实现必要范围；未实现能力必须明确标注为规划。
 - 变更架构、目录或公共契约时同步更新对应文档。
@@ -20,11 +20,11 @@
 ## 实现边界
 
 - 新增渲染代码不得直接导入 Node.js 或主进程实现；保留上游平台与模型接口，不扩大凭据暴露范围。
-- 系统能力通过窄接口 preload/IPC 提供，不暴露通用 IPC、文件系统或命令执行接口。
+- 当前系统能力使用浏览器 API 和窄平台接口；移除 Electron/preload/IPC，不伪造桌面能力或引入通用文件系统、命令执行接口。
 - 公共契约不能反向依赖主进程或服务实现；旧原型 Remix 服务继续按 .server.ts 隔离。
 - HTTP、IPC、磁盘与模型返回的数据都需要运行时校验，不能只依赖 TypeScript 断言。
 - 当前使用上游聊天与持久化实现，不额外维护重复消息状态。
-- 保持上游 main、preload、renderer 和 core 边界，不将旧原型进程模型描述为当前实现。
+- 保持 renderer、共享契约和业务包边界；原网页当前仍使用 Chatbox 业务及浏览器存储，不能称为已经接入 MOMO-core。Core 已确认的角色、记忆和模型规则按契约逐项接替。
 
 ## 验证与交付
 
