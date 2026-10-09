@@ -6,6 +6,8 @@ import * as conversations from '../../routes/api.conversations'
 import * as models from '../../routes/api.models'
 import * as parameters from '../../routes/api.parameters'
 import * as resources from '../../routes/api.resources'
+import * as assets from '../../routes/api.assets'
+import * as moc from '../../routes/api.moc'
 import * as spaces from '../../routes/api.spaces'
 import * as workspace from '../../routes/api.workspace'
 import type { HandlerArgs } from './handler-types'
@@ -18,6 +20,8 @@ const routes: Routes = {
   '/api/characters': characters,
   '/api/conversations': conversations,
   '/api/resources': resources,
+  '/api/assets': assets,
+  '/api/moc': moc,
   '/api/parameters': parameters,
   '/api/models': models,
   '/api/chat': chat,

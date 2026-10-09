@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '../lib/server/handler-types';
-import { character, list, record, text, uuid } from '../contracts/core';
+import { character, characterFields, list, record, text, uuid } from '../contracts/core';
 import { actionError, actionInput, core } from '../lib/server/actions.server';
 import { CoreError } from '../lib/server/core.server';
 
@@ -17,6 +17,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const spaceId = uuid(query.get('space'));
     const client = core(spaceId);
     switch (query.get('kind')) {
+      case 'identities':
+        return Response.json(
+          await (await client.request(`/v1/memory/identity-binding?space_id=${spaceId}`)).json()
+        );
+      case 'state-contract':
+      case 'state-runtime':
+        return Response.json(
+          await (
+            await client.request(
+              `/v1/mo-state/${
+                query.get('kind') === 'state-contract' ? 'contract' : 'runtime'
+              }?space_id=${spaceId}`
+            )
+          ).json()
+        );
       case 'prompts':
         return Response.json(
           list(await (await client.request('/v1/prompt-spaces')).json(), (value) => {
@@ -28,29 +43,36 @@ export async function loader({ request }: LoaderFunctionArgs) {
               source: text(p.source, 'source'),
               revision: text(p.revision, 'revision'),
             };
-          }),
+          })
         );
       case 'runtime':
         return Response.json(
-          record(await (await client.request(`/v1/runtime-settings/metadata?space_id=${spaceId}`)).json()),
+          record(
+            await (await client.request(`/v1/runtime-settings/metadata?space_id=${spaceId}`)).json()
+          )
         );
       case 'memory':
         return Response.json(
-          list(await (await client.request(`/v1/memory/documents?space_id=${spaceId}`)).json(), record),
+          list(
+            await (await client.request(`/v1/memory/documents?space_id=${spaceId}`)).json(),
+            record
+          )
         );
       case 'memory-content': {
         const id = encodeURIComponent(text(query.get('id'), 'id'));
         return Response.json(
-          await (await client.request(`/v1/memory/documents/${id}?space_id=${spaceId}`)).json(),
+          await (await client.request(`/v1/memory/documents/${id}?space_id=${spaceId}`)).json()
         );
       }
       case 'provenance':
         return Response.json(
           await (
             await client.request(
-              `/v1/memory/provenance?space_id=${spaceId}&semantic_graph=${query.get('graph') === 'true'}`,
+              `/v1/memory/provenance?space_id=${spaceId}&semantic_graph=${
+                query.get('graph') === 'true'
+              }`
             )
-          ).json(),
+          ).json()
         );
       case 'nsg':
         return Response.json(
@@ -58,11 +80,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
             await (
               await client.request('/v1/semantic-graph/nodes/list', {
                 method: 'POST',
-                body: JSON.stringify({ space_id: spaceId }),
+                body: JSON.stringify({ space_id: spaceId, include_archived: true }),
               })
             ).json(),
-            record,
-          ),
+            record
+          )
         );
       default:
         throw new CoreError(404, 'resource_not_found');
@@ -78,6 +100,22 @@ export async function action({ request }: ActionFunctionArgs) {
     const spaceId = uuid(input.spaceId);
     const client = core(spaceId);
     switch (input.command) {
+      case 'state-contract-save':
+      case 'state-contract-reset': {
+        const revision = text(input.revision, 'revision');
+        if (!/^[a-f0-9]{64}$/.test(revision)) throw Error('Invalid revision');
+        return Response.json(
+          await (
+            await client.request(`/v1/mo-state/contract?space_id=${spaceId}`, {
+              method: input.command === 'state-contract-reset' ? 'DELETE' : 'PUT',
+              headers: { 'If-Match': revision },
+              ...(input.command === 'state-contract-save'
+                ? { body: JSON.stringify({ content: text(input.content, 'content') }) }
+                : {}),
+            })
+          ).json()
+        );
+      }
       case 'prompt-save':
       case 'prompt-reset': {
         const id = text(input.id, 'id');
@@ -88,17 +126,21 @@ export async function action({ request }: ActionFunctionArgs) {
               `/v1/prompt-spaces/${id}`,
               input.command === 'prompt-reset'
                 ? { method: 'DELETE' }
-                : { method: 'PUT', body: JSON.stringify({ content: text(input.content, 'content') }) },
+                : {
+                    method: 'PUT',
+                    body: JSON.stringify({ content: text(input.content, 'content') }),
+                  }
             )
-          ).json(),
+          ).json()
         );
       }
       case 'runtime-save': {
         if (!Number.isSafeInteger(input.revision) || Number(input.revision) < 0)
           throw Error('Invalid revision');
         const patch = record(input.patch);
-        const allowed = ['history_window', 'runtime', 'request_overrides'];
-        if (Object.keys(patch).some((key) => !allowed.includes(key))) throw Error('Invalid settings');
+        const allowed = ['history_window', 'runtime', 'request_overrides', 'mo_state'];
+        if (Object.keys(patch).some((key) => !allowed.includes(key)))
+          throw Error('Invalid settings');
         return Response.json(
           await (
             await client.request(`/v1/runtime-settings/${spaceId}`, {
@@ -106,7 +148,7 @@ export async function action({ request }: ActionFunctionArgs) {
               headers: { 'If-Match': String(input.revision) },
               body: JSON.stringify(patch),
             })
-          ).json(),
+          ).json()
         );
       }
       case 'character-save': {
@@ -121,10 +163,15 @@ export async function action({ request }: ActionFunctionArgs) {
             await (
               await client.request(`/v1/characters/${id}`, {
                 method: 'PUT',
-                body: JSON.stringify({ ...old, name, character_markdown: persona }),
+                body: JSON.stringify({
+                  ...old,
+                  ...characterFields(input),
+                  name,
+                  character_markdown: persona,
+                }),
               })
-            ).json(),
-          ),
+            ).json()
+          )
         );
       }
       case 'conversation-rename': {
@@ -133,7 +180,7 @@ export async function action({ request }: ActionFunctionArgs) {
         if (!title || title.length > 200) throw Error('Invalid title');
         const all = list(
           await (await client.request(`/v1/conversations?space_id=${spaceId}`)).json(),
-          record,
+          record
         );
         const old = all.find((item) => item.id === id && item.space_id === spaceId);
         if (!old) throw new CoreError(404, 'conversation_not_found');
@@ -143,7 +190,7 @@ export async function action({ request }: ActionFunctionArgs) {
               method: 'PUT',
               body: JSON.stringify({ ...old, title }),
             })
-          ).json(),
+          ).json()
         );
       }
       default:

@@ -1,6 +1,6 @@
 # 当前架构
 
-2026-10-09 按 [0007](decisions/0007-preserve-core-progress.md) 纠正切仓库引起的功能回退。原仓库独立安装/构建/运行；没有对 MOMO-app 源码或 5178 服务的运行依赖。ron 留待网页稳定后兼容，本轮不修改 Core 或 ron。
+2026-10-09 按 [0007](decisions/0007-preserve-core-progress.md) 纠正切仓库引起的功能回退。原仓库独立安装/构建/运行；没有对 MOMO-app 源码或 5178 服务的运行依赖。ron 留待网页稳定后兼容。0008 的角色全字段创建、原子开场、资产原子编辑和 MS 契约读取修复在独立 Core 仓库实现；不修改 ron。
 
 ## 活动结构
 
@@ -21,6 +21,12 @@
 Core 保存角色、历史、记忆/NSG、提示词与运行策略。模型账号由 momo-server 宿主配置适配器管理，不由 Core 库启动时读取；密钥不回显到浏览器。Web SQLite 保存空间目录、参数组及幂等请求参数快照。沿用原配置目录即可保留 Space UUID，不复制一份聊天库。
 
 界面偏好/装饰图像使用浏览器本地存储。不同网页 origin 的偏好不会自动互通；本轮不新增旧格式导入。未来桌面通过已有宿主端口适配，不把 Node 实现塞回 Core 或 ron。
+
+## 配置与导出
+
+Web 的 api.assets 只校验宿主授权和表单，将完整内容、RecordPolicy 和 revision 一起交给 Core；不自己写资产文件。Core 区分个人 Space 与存储 Space。世界选项通过实际 MemoryIdentity 获取，不以对话 ID 猜共享世界。原目标对话消失后可保留绑定继续编辑，不能自动扩大注入范围。
+
+MO State 复用 runtime-settings 稀疏 PATCH、契约 CAS 和运行状态。MOC 路由只接受模块/空间/角色选择，由宿主生成临时路径、流式返回下载并清理文件；不接收浏览器指定的文件路径，不持久化口令。Core 保存/导出边界不复制到 UI。具体提交组合见 sources/runtime-combination.json。
 
 ## 构建约束
 

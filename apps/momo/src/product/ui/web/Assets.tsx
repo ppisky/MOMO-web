@@ -20,6 +20,7 @@ import { useResource } from './CoreSettings';
 import { useProduct } from './context';
 import { api } from './api';
 import Page from './Page';
+import { AssetEditor } from './AssetEditor';
 type Asset = {
   id: string;
   title: string;
@@ -33,14 +34,21 @@ export function Assets({ graph = false }: { graph?: boolean }) {
   const { data } = useProduct();
   const { value, error, reload } = useResource(graph ? 'nsg' : 'memory');
   const provenance = useResource(graph ? 'provenance&graph=true' : 'provenance');
+  const [editing, setEditing] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [status, setStatus] = useState<string | null>('all');
   const [scope, setScope] = useState<string | null>('all');
   const [origin, setOrigin] = useState<string | null>('all');
   const [body, setBody] = useState('');
-  useEffect(() => { setSelected(null); setBody(''); }, [data.spaceId, graph]);
+  useEffect(() => {
+    setSelected(null);
+    setEditing(null);
+    setBody('');
+  }, [data.spaceId, graph]);
   const ledger = provenance.value ? record(record(provenance.value).ledger) : null;
   const records = ledger ? record(ledger.records) : {};
+  const rows = value ? list(value, record) : [];
   const assets: Asset[] = value
     ? list(value, (raw) => {
         const a = record(raw);
@@ -48,19 +56,25 @@ export function Assets({ graph = false }: { graph?: boolean }) {
         const entry = records[id] ? record(records[id]) : null;
         const revisions = entry && Array.isArray(entry.revisions) ? entry.revisions : [];
         const latest = revisions.length ? record(record(revisions[0]).context) : null;
-        const origin = latest?.proposer === 'local_author' ? 'user' : latest ? 'automatic' : 'unknown';
+        const origin =
+          latest?.proposer === 'local_author'
+            ? 'user'
+            : ['dmw_distiller', 'nsg_governor'].includes(String(latest?.proposer))
+            ? 'automatic'
+            : 'unknown';
         const aliases = Array.isArray(a.aliases)
           ? a.aliases.filter((v): v is string => typeof v === 'string')
           : [];
         return {
           id,
-          title: aliases[0] ?? id,
+          title:
+            aliases[0] ?? (graph && Array.isArray(a.anchors) ? String(a.anchors[0] ?? id) : id),
           scope:
             typeof a.injection_scope === 'string'
               ? a.injection_scope
               : graph && Array.isArray(a.inject_character_ids) && a.inject_character_ids.length
-                ? 'character'
-                : 'unspecified',
+              ? 'character'
+              : 'unspecified',
           origin,
           status: String(a.status ?? ''),
           body: graph
@@ -77,7 +91,11 @@ export function Assets({ graph = false }: { graph?: boolean }) {
             ? a.edges.flatMap((e) => {
                 if (!e || typeof e !== 'object') return [];
                 const v = record(e);
-                return typeof v.target === 'string' ? [v.target] : typeof v.to === 'string' ? [v.to] : [];
+                return typeof v.target === 'string'
+                  ? [v.target]
+                  : typeof v.to === 'string'
+                  ? [v.to]
+                  : [];
               })
             : [],
         };
@@ -87,17 +105,21 @@ export function Assets({ graph = false }: { graph?: boolean }) {
     (a) =>
       (a.title + ' ' + a.body).toLowerCase().includes(query.toLowerCase()) &&
       (scope === 'all' || a.scope === scope) &&
-      (origin === 'all' || a.origin === origin),
+      (origin === 'all' || a.origin === origin)
   );
   const current = assets.find((a) => a.id === selected);
+  const currentHistory = selected && records[selected] ? record(records[selected]) : null;
+  const currentPolicy = currentHistory?.policy ? record(currentHistory.policy) : null;
   useEffect(() => {
     setBody('');
     if (!graph && selected) {
       const abort = new AbortController();
       void api(
-        `/api/resources?space=${data.spaceId}&kind=memory-content&id=${encodeURIComponent(selected)}`,
+        `/api/resources?space=${data.spaceId}&kind=memory-content&id=${encodeURIComponent(
+          selected
+        )}`,
         undefined,
-        abort.signal,
+        abort.signal
       )
         .then((v) => setBody(text(record(v).body, 'body')))
         .catch((e) => {
@@ -110,9 +132,21 @@ export function Assets({ graph = false }: { graph?: boolean }) {
     <Page
       title={graph ? '语义网' : '记忆'}
       right={
-        <Button variant="subtle" size="xs" onClick={() => { reload(); provenance.reload(); }}>
-          刷新
-        </Button>
+        <Flex gap="xs">
+          <Button
+            variant="subtle"
+            size="xs"
+            onClick={() => {
+              reload();
+              provenance.reload();
+            }}
+          >
+            刷新
+          </Button>
+          <Button size="xs" onClick={() => setEditing('new')}>
+            {graph ? '新建节点' : '新建记忆'}
+          </Button>
+        </Flex>
       }
     >
       <Stack p="md" gap="md" h="100%">
@@ -132,9 +166,9 @@ export function Assets({ graph = false }: { graph?: boolean }) {
             onChange={setScope}
             data={[
               { value: 'all', label: '全部注入范围' },
-              { value: 'conversation', label: '单个对话' },
-              { value: 'character', label: '角色全部对话' },
-              { value: 'account', label: '空间范围' },
+              ...(!graph ? [{ value: 'conversation', label: '单个对话' }] : []),
+              { value: 'character', label: graph ? '指定角色（受世界范围限制）' : '角色范围' },
+              ...(!graph ? [{ value: 'account', label: '空间范围' }] : []),
               { value: 'unspecified', label: '未指定范围' },
             ]}
           />
@@ -147,6 +181,16 @@ export function Assets({ graph = false }: { graph?: boolean }) {
               { value: 'user', label: '用户创建' },
               { value: 'automatic', label: '自动产生' },
               { value: 'unknown', label: '来源待核对' },
+            ]}
+          />
+          <Select
+            aria-label="资产状态"
+            value={status}
+            onChange={setStatus}
+            data={[
+              { value: 'all', label: '全部状态' },
+              { value: 'active', label: '启用' },
+              { value: 'archived', label: '已归档' },
             ]}
           />
         </Flex>
@@ -165,6 +209,19 @@ export function Assets({ graph = false }: { graph?: boolean }) {
                   width="100%"
                   style={{ minHeight: 340 }}
                 >
+                  <defs>
+                    <marker
+                      id="nsg-arrow"
+                      viewBox="0 0 10 10"
+                      refX="35"
+                      refY="5"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--chatbox-border-brand)" />
+                    </marker>
+                  </defs>
                   {visible.map((node, i) => {
                     const angle = (i * Math.PI * 2) / visible.length;
                     const x = 400 + (visible.length === 1 ? 0 : 240 * Math.cos(angle));
@@ -182,6 +239,7 @@ export function Assets({ graph = false }: { graph?: boolean }) {
                               x2={400 + 240 * Math.cos((j * Math.PI * 2) / visible.length)}
                               y2={230 + 140 * Math.sin((j * Math.PI * 2) / visible.length)}
                               stroke="var(--chatbox-border-brand)"
+                              markerEnd="url(#nsg-arrow)"
                             />
                           );
                         })}
@@ -210,6 +268,7 @@ export function Assets({ graph = false }: { graph?: boolean }) {
                             fill="var(--chatbox-tint-primary)"
                           >
                             {node.title}
+                            {node.status === 'archived' ? '（已归档）' : ''}
                           </text>
                         </g>
                       </g>
@@ -225,7 +284,11 @@ export function Assets({ graph = false }: { graph?: boolean }) {
                     onClick={() => setSelected(asset.id)}
                     p="md"
                     className="rounded-lg border border-solid border-chatbox-border-primary"
-                    bg={asset.id === selected ? 'var(--chatbox-background-brand-secondary)' : 'transparent'}
+                    bg={
+                      asset.id === selected
+                        ? 'var(--chatbox-background-brand-secondary)'
+                        : 'transparent'
+                    }
                   >
                     <Flex justify="space-between" gap="sm">
                       <Text fw={500}>{asset.title}</Text>
@@ -233,19 +296,24 @@ export function Assets({ graph = false }: { graph?: boolean }) {
                         {asset.origin === 'user'
                           ? '用户创建'
                           : asset.origin === 'automatic'
-                            ? '自动产生'
-                            : '来源待核对'}
+                          ? '自动产生'
+                          : '来源待核对'}
                       </Badge>
                     </Flex>
                     <Text size="xs" c="chatbox-tertiary" mt="xs">
                       {asset.scope === 'conversation'
                         ? '单个对话'
                         : asset.scope === 'character'
-                          ? '角色全部对话'
-                          : asset.scope === 'account'
-                            ? '空间范围'
-                            : '未指定注入范围'}{' '}
-                      · {asset.status === 'active' ? '启用' : asset.status}
+                        ? '角色范围'
+                        : asset.scope === 'account'
+                        ? '空间范围'
+                        : '未指定注入范围'}{' '}
+                      ·{' '}
+                      {asset.status === 'active'
+                        ? '启用'
+                        : asset.status === 'archived'
+                        ? '已归档'
+                        : asset.status}
                     </Text>
                   </UnstyledButton>
                 ))}
@@ -253,7 +321,9 @@ export function Assets({ graph = false }: { graph?: boolean }) {
             )}
             {!error && !visible.length && (
               <Stack align="center" py={70}>
-                <Title order={5}>{value ? (graph ? '还没有语义网节点' : '还没有记忆') : '正在载入…'}</Title>
+                <Title order={5}>
+                  {value ? (graph ? '还没有语义网节点' : '还没有记忆') : '正在载入…'}
+                </Title>
                 <Text size="sm" c="chatbox-tertiary">
                   当前空间的资产会显示在这里。
                 </Text>
@@ -263,6 +333,13 @@ export function Assets({ graph = false }: { graph?: boolean }) {
           {current && (
             <Stack w={{ base: '100%', sm: 320 }} gap="sm">
               <Title order={5}>{current.title}</Title>
+              <Button
+                variant="light"
+                disabled={rows.find((r) => r.id === current.id)?.type === 'current'}
+                onClick={() => setEditing(current.id)}
+              >
+                编辑配置
+              </Button>
               <Text size="xs" c="chatbox-tertiary">
                 空间：{data.spaces.spaces.find((s) => s.id === data.spaceId)?.name}
               </Text>
@@ -271,9 +348,25 @@ export function Assets({ graph = false }: { graph?: boolean }) {
                 {current.origin === 'user'
                   ? '用户创建'
                   : current.origin === 'automatic'
-                    ? '自动产生'
-                    : '待核对'}
+                  ? '自动产生'
+                  : '待核对'}
               </Text>
+              {currentPolicy && (
+                <Text size="xs" c="chatbox-tertiary">
+                  可用角色：
+                  {[
+                    currentPolicy.owner_character_id,
+                    ...(Array.isArray(currentPolicy.readers) ? currentPolicy.readers : []),
+                  ]
+                    .filter(Boolean)
+                    .map((id) => data.characters.find((r) => r.id === id)?.name ?? '原有角色')
+                    .join('、') || '未指定'}
+                  {Array.isArray(currentPolicy.continuity_ids) &&
+                  currentPolicy.continuity_ids.length
+                    ? ` · 限定 ${currentPolicy.continuity_ids.length} 个世界 / 连续性`
+                    : ' · 不额外限制世界'}
+                </Text>
+              )}
               <div className="msg-content">
                 <Markdown>{graph ? current.body : body}</Markdown>
               </div>
@@ -281,6 +374,21 @@ export function Assets({ graph = false }: { graph?: boolean }) {
           )}
         </Flex>
       </Stack>
+      {editing && (
+        <AssetEditor
+          key={`${data.spaceId}:${graph}:${editing}`}
+          graph={graph}
+          original={editing === 'new' ? null : rows.find((r) => r.id === editing) ?? null}
+          nodes={rows}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            reload();
+            provenance.reload();
+            if (selected) setSelected(null);
+          }}
+        />
+      )}
     </Page>
   );
 }

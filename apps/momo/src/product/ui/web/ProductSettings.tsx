@@ -1,4 +1,6 @@
 import React from 'react';
+import { MoStateSettings } from './MoStateSettings';
+import { MocExport } from './MocExport';
 import { Stack, Text, Title } from '@mantine/core';
 import { ProviderSettings } from './ProviderSettings';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +23,10 @@ export function ProductSettings({ page, onClose }: { page: string; onClose: () =
         <ChatSettings />
       ) : page === 'model-parameters' ? (
         <ModelParameters />
+      ) : page === 'mo-state' ? (
+        <MoStateSettings />
+      ) : page === 'moc' ? (
+        <MocExport />
       ) : page === 'memory' ? (
         <Stack p="md">
           <RuntimeSettings />

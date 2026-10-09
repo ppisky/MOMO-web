@@ -15,7 +15,7 @@ const calls: { path: string; init?: RequestInit }[] = [];
 const transport: typeof fetch = async (input, init) => {
   const path = String(input).replace(config.coreOrigin, ''); calls.push({ path, ...(init ? { init } : {}) });
   if (path.startsWith('/v1/conversations?')) return Response.json([convDTO]);
-  if (path.startsWith('/v1/characters?')) return Response.json([{ id: char, owner_space_id: personal, name: '月', character_markdown: '安静' }]);
+  if (path.startsWith('/v1/characters?')) return Response.json([{ id: char, owner_space_id: personal, name: '月', character_markdown: '安静', version: '2.0.0', author_name: 'Test', author_url: null, user_markdown: '', opening_markdown: null }]);
   if (path === '/v1/momo/responses') return new Response('data: {}\n\n', { headers: { 'Content-Type': 'text/event-stream' } });
   if (path === '/v1/conversations') return Response.json(convDTO);
   if (path === '/health') return Response.json({ ok: true, service: 'momo-server', core_version: '1.0.0-rc.1' });

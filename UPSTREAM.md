@@ -22,3 +22,5 @@
 使用 pnpm 10.33.0，应用运行时固定 Node 26.11.1。旧翻译工具仍有 engine 警告；不为清理 Electron 顺带升级框架。测试进程关闭 Node 26 实验性 Web Storage，让 jsdom 提供 localStorage。
 
 锁文件中的 electron-to-chromium 是 Browserslist 的浏览器版本映射数据，不含 Electron 二进制或桌面运行时。实际依赖边界和生产构建均另行检查。
+
+0008 将网页配置对齐 Core，并通过独立上游提交补通用缺口。当前 Core revision 为 60ae97aff99398b835311c716759d59d06dbce67，组合见 docs/sources/runtime-combination.json。core-ui-restoration.json 保留迁入当时的来源哈希与历史 Core revision，不再代表当前运行依赖。

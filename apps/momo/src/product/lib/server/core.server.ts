@@ -138,7 +138,7 @@ export class CoreClient {
     return values;
   }
 
-  async createCharacter(name: string, persona: string) {
+  async createCharacter(name: string, persona: string, fields: Record<string, string | null> = {}) {
     const created = character(
       await (
         await this.request('/v1/characters', {
@@ -149,6 +149,7 @@ export class CoreClient {
             name,
             character_markdown: persona,
             user_markdown: '',
+            ...fields,
           }),
         })
       ).json(),

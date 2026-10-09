@@ -4,6 +4,8 @@ import React, { type ReactNode } from 'react';
 import { Box, Button, Flex, Modal, Stack, Text, Title } from '@mantine/core';
 import {
   IconAdjustments,
+  IconActivity,
+  IconDownload,
   IconArchive,
   IconBox,
   IconBrain,
@@ -36,6 +38,8 @@ export function Settings({
     ['chat', 'Chat Settings', IconMessages],
     ['archive', 'Archived Chats', IconArchive],
     ['memory', '记忆与语义网', IconBrain],
+    ['mo-state', 'MO State', IconActivity],
+    ['moc', '导出 MOC', IconDownload],
     ['spaces', '空间', IconLayoutGrid],
     ['general', 'General Settings', IconAdjustments],
   ] as const;
@@ -133,7 +137,11 @@ export function Settings({
             ))}
           </Stack>
           {(!small || page !== 'index') && (
-            <Box id={`momo-settings-content-${page}`} flex="1 1 80%" className="web-settings-content">
+            <Box
+              id={`momo-settings-content-${page}`}
+              flex="1 1 80%"
+              className="web-settings-content"
+            >
               {children}
             </Box>
           )}

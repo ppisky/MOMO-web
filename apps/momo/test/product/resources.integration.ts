@@ -1,5 +1,6 @@
 // Real Core HTTP behind the App's allowlisted resource adapter; isolated data only.
 import assert from 'node:assert/strict';
+import { verifyConfiguration } from './configuration.verification';
 import { middleware } from '../../src/product/lib/server/http.server';
 import { spawn } from 'node:child_process';
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -83,6 +84,10 @@ const webAddress = web.address(); assert(webAddress && typeof webAddress !== 'st
 const webOrigin = 'http://127.0.0.1:' + webAddress.port;
 async function get(kind: string, space: string) {
   const response = await fetch(webOrigin + '/api/resources?kind=' + kind + '&space=' + space);
+  if (!response.ok && kind.startsWith('state-')) {
+    const failure = await fetch(origin + '/v1/mo-state/' + kind.slice(6) + '?space_id=' + space);
+    assert.equal(response.status, 200, await failure.text());
+  }
   assert.equal(response.status, 200, await response.clone().text()); return response.json();
 }
 async function post(input: unknown) { return call(action, 'resources', input); }
@@ -286,6 +291,10 @@ try {
     ).status,
     404,
   );
+  await verifyConfiguration({
+    get, post, call: (path, input) => call(action, path, input), client, space, other: second.id,
+    roleId: role.id, conversationId: conversation.id, upstream: requests,
+  });
   console.log(
     'PASS: Web HTTP host + real Core character editing/conversation, prompt save/reset, sparse policy/CAS, memory/NSG reads and Space isolation',
   );
