@@ -10,7 +10,7 @@
   "description": "MOMO roleplay web application",
   "scripts": {
     "generate:model-snapshot": "pnpm exec tsx scripts/generate-model-snapshot.ts",
-    "build": "vite build --config vite.config.web.ts",
+    "build": "vite build --config vite.config.web.ts && node scripts/build-product-host.mjs",
     "dev": "vite --config vite.config.web.ts",
     "dev:local": "cross-env USE_LOCAL_API=true pnpm start",
     "dev:web": "pnpm dev",
@@ -42,7 +42,10 @@
     "build:web": "pnpm build",
     "preview": "vite preview --config vite.config.web.ts",
     "serve:web": "pnpm preview",
-    "check:web": "node scripts/check-web-boundaries.mjs"
+    "check:web": "node scripts/check-web-boundaries.mjs",
+    "test:product": "tsx --test test/product/*.test.ts",
+    "test:product:resources": "tsx test/product/resources.integration.ts",
+    "test:product:spaces": "tsx test/product/spaces.integration.ts"
   },
   "repository": {
     "type": "git",
@@ -137,7 +140,7 @@
     "@types/mark.js": "^8.11.12",
     "@types/markdown-it": "^12.2.3",
     "@types/markdown-it-link-attributes": "^3.0.1",
-    "@types/node": "20.2.5",
+    "@types/node": "22.19.15",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.2.4",
     "@types/react-swipeable-views": "^0.13.6",
@@ -174,6 +177,7 @@
     "diff": "8.0.3",
     "dotenv": "^16.3.1",
     "emittery": "^1.1.0",
+    "esbuild": "0.25.12",
     "fake-indexeddb": "^6.2.5",
     "fflate": "^0.8.3",
     "form-data": "^4.0.6",
@@ -237,6 +241,7 @@
     "tailwindcss": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
     "ts-node": "^10.9.1",
+    "tsx": "4.20.6",
     "typescript": "^5.8.3",
     "unist-util-visit": "^5.0.0",
     "vaul": "^1.1.2",

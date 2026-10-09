@@ -1,0 +1,266 @@
+import { character, conversation, list, message, record, text, uuid } from '../../contracts/core';
+import { assets, receipt, type Removal } from '../../contracts/spaces';
+import type { ResolvedParameters } from '../../contracts/parameters';
+import { requestParameters } from '../../contracts/parameters';
+
+type HostConfig = { coreOrigin: string; personalSpaceId: string; conversationSpaceId: string; applicationOrigin?: string };
+type HostGlobal = typeof globalThis & {
+  __MOMO_HOST_CONFIG?: HostConfig;
+  process?: { env: Record<string, string | undefined> };
+};
+
+export function hostConfig(spaceId?: string): HostConfig {
+  const host = globalThis as HostGlobal;
+  const injected = host.__MOMO_HOST_CONFIG;
+  const env = host.process?.env ?? {};
+  const coreOrigin = injected?.coreOrigin ?? env.MOMO_CORE_ORIGIN ?? 'http://127.0.0.1:8765';
+  const url = new URL(coreOrigin);
+  if (
+    url.protocol !== 'http:' ||
+    !['127.0.0.1', '[::1]'].includes(url.hostname) ||
+    url.username ||
+    url.password ||
+    url.pathname !== '/' ||
+    url.search ||
+    url.hash
+  )
+    throw new Error('Core 地址必须是本机 loopback HTTP origin');
+  return {
+    coreOrigin: url.origin,
+    personalSpaceId: uuid(spaceId ?? injected?.personalSpaceId ?? env.MOMO_PERSONAL_SPACE_ID),
+    conversationSpaceId: uuid(spaceId ?? injected?.conversationSpaceId ?? env.MOMO_CONVERSATION_SPACE_ID),
+  };
+}
+
+export class CoreError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly code: string,
+    message?: string,
+  ) {
+    super(message ?? `Core 请求失败（${code}）`);
+  }
+}
+
+export class CoreClient {
+  constructor(
+    public readonly config: HostConfig,
+    private readonly transport: typeof fetch = fetch,
+  ) {}
+
+  async spaceAssets(id: string) {
+    if (uuid(id) !== this.config.personalSpaceId) throw new CoreError(403, 'space_denied');
+    const value = assets(await (await this.request(`/v1/spaces/${id}/assets`)).json());
+    if (value.space_id !== id) throw new CoreError(502, 'space_response_mismatch');
+    return value;
+  }
+
+  async removeSpace(request: Removal) {
+    if (request.source_id !== this.config.personalSpaceId) throw new CoreError(403, 'space_denied');
+    return receipt(
+      await (
+        await this.request(
+          `/v1/spaces/${request.source_id}/remove`,
+          { method: 'POST', body: JSON.stringify(request) },
+          120000,
+        )
+      ).json(),
+    );
+  }
+
+  async request(path: string, init: RequestInit = {}, timeoutMs = 30000): Promise<Response> {
+    const timeout = AbortSignal.timeout(timeoutMs);
+    const signal = init.signal ? AbortSignal.any([timeout, init.signal]) : timeout;
+    const headers = new Headers(init.headers);
+    headers.set('Content-Type', 'application/json');
+    const response = await this.transport(this.config.coreOrigin + path, {
+      ...init,
+      signal,
+      redirect: 'error',
+      headers,
+    });
+    if (!response.ok) {
+      let code = `http_${response.status}`;
+      try {
+        const error = record(record(await response.json()).error);
+        if (typeof error.code === 'string' && /^[a-zA-Z0-9_.-]{1,80}$/.test(error.code)) code = error.code;
+      } catch {}
+      throw new CoreError(response.status, code);
+    }
+    return response;
+  }
+
+  async health() {
+    const value = record(await (await this.request('/health')).json());
+    if (value.ok !== true || value.service !== 'momo-server')
+      throw new Error('目标不是可用的 MOMO Core 服务');
+    const version = text(value.core_version, 'core_version');
+    if (!/^1\.0\.0(?:-rc\.\d+)?$/.test(version)) throw new Error(`未验证的 Core 版本：${version}`);
+    return version;
+  }
+
+  async characters() {
+    const values = list(
+      await (await this.request(`/v1/characters?space_id=${this.config.personalSpaceId}`)).json(),
+      character,
+    );
+    if (values.some((value) => value.owner_space_id !== this.config.personalSpaceId))
+      throw new Error('Core 返回了授权范围外的角色');
+    return values;
+  }
+
+  async conversations() {
+    const values = list(
+      await (await this.request(`/v1/conversations?space_id=${this.config.conversationSpaceId}`)).json(),
+      conversation,
+    );
+    if (values.some((value) => value.space_id !== this.config.conversationSpaceId))
+      throw new Error('Core 返回了授权范围外的会话');
+    return values;
+  }
+
+  async requireConversation(id: string) {
+    if (!(await this.conversations()).some((value) => value.id === uuid(id)))
+      throw new CoreError(404, 'conversation_not_found');
+  }
+
+  async messages(id: string) {
+    await this.requireConversation(id);
+    const values = list(
+      await (
+        await this.request(
+          `/v1/conversations/${uuid(id)}/messages?space_id=${this.config.conversationSpaceId}`,
+        )
+      ).json(),
+      message,
+    );
+    if (values.some((value) => value.conversation_id !== id)) throw new Error('Core 返回了其他会话的消息');
+    return values;
+  }
+
+  async createCharacter(name: string, persona: string) {
+    const created = character(
+      await (
+        await this.request('/v1/characters', {
+          method: 'POST',
+          body: JSON.stringify({
+            owner_space_id: this.config.personalSpaceId,
+            author_name: 'MOMO App',
+            name,
+            character_markdown: persona,
+            user_markdown: '',
+          }),
+        })
+      ).json(),
+    );
+    if (created.owner_space_id !== this.config.personalSpaceId)
+      throw new Error('Core 返回了授权范围外的角色');
+    return created;
+  }
+
+  async createConversation(characterId: string | null) {
+    const selected = characterId
+      ? (await this.characters()).find((value) => value.id === uuid(characterId))
+      : character(
+          await (
+            await this.request('/v1/memory/default-assistant', {
+              method: 'POST',
+              body: JSON.stringify({
+                personal_space_id: this.config.personalSpaceId,
+                name: 'MOMO',
+                author_name: 'MOMO App',
+              }),
+            })
+          ).json(),
+        );
+    if (characterId && !selected) throw new CoreError(404, 'character_not_found');
+    const created = conversation(
+      await (
+        await this.request('/v1/conversations', {
+          method: 'POST',
+          body: JSON.stringify({
+            space_id: this.config.conversationSpaceId,
+            character_id: selected?.id ?? null,
+            title: selected ? `与${selected.name}的对话` : '新对话',
+          }),
+        })
+      ).json(),
+    );
+    if (
+      created.space_id !== this.config.conversationSpaceId ||
+      created.character_id !== (selected?.id ?? null)
+    )
+      throw new Error('Core 创建了范围外的会话');
+    return created;
+  }
+
+  async respond(
+    id: string,
+    input: string,
+    requestId: string,
+    signal: AbortSignal,
+    parameters?: ResolvedParameters,
+  ) {
+    uuid(requestId);
+    await this.requireConversation(id);
+    const memorySources =
+      this.config.personalSpaceId === this.config.conversationSpaceId
+        ? [
+            {
+              space_id: this.config.personalSpaceId,
+              label: '当前空间',
+              weight: 100,
+              memory: true,
+              semantic_graph: true,
+            },
+          ]
+        : [
+            {
+              space_id: this.config.personalSpaceId,
+              label: '个人空间',
+              weight: 70,
+              memory: true,
+              semantic_graph: true,
+            },
+            {
+              space_id: this.config.conversationSpaceId,
+              label: '会话空间',
+              weight: 30,
+              memory: true,
+              semantic_graph: true,
+            },
+          ];
+    return this.request(
+      '/v1/momo/responses',
+      {
+        method: 'POST',
+        signal,
+        body: JSON.stringify({
+          model: parameters?.modelReference ?? 'conversation',
+          input,
+          stream: true,
+          ...(parameters ? requestParameters(parameters) : {}),
+          momo: {
+            schema: 'momo.responses/1.0',
+            request_id: requestId,
+            conversation_id: id,
+            personal_space_id: this.config.personalSpaceId,
+            conversation_space_id: this.config.conversationSpaceId,
+            memory_sources: memorySources,
+            memory_write_space_id: this.config.personalSpaceId,
+            mo_state: true,
+            ...(parameters?.modelRoutes ? { model_routes: parameters.modelRoutes } : {}),
+          },
+        }),
+      },
+      300000,
+    );
+  }
+
+  async cancel(requestId: string) {
+    return this.request(`/v1/momo/responses/${encodeURIComponent(uuid(requestId))}/cancel`, {
+      method: 'POST',
+      body: JSON.stringify({ personal_space_id: this.config.personalSpaceId }),
+    });
+  }
+}

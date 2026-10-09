@@ -1,0 +1,165 @@
+{
+  "repository": "D:/MOMO-web",
+  "revision": "5f37630dfbb4d7007ea8b1abddfdce1721b117a9",
+  "tree": "1c8bef1db60690f7522b349731084f7f90334892",
+  "ref": "refs/codex/baselines/web-ui-source-20261008",
+  "license": "GPL-3.0",
+  "files": [
+    {
+      "path": "apps/momo/src/renderer/modals/Settings.tsx",
+      "sha256": "024acc5739f46185ca26ef062d2390a026f509761e15250509aeeaffa84b46f3"
+    },
+    {
+      "path": "apps/momo/src/renderer/routes/settings/route.tsx",
+      "sha256": "8a197265482e249e0aace22c1844301ad055c2d5a9195b5b13d7df0d05986b6d"
+    },
+    {
+      "path": "apps/momo/src/renderer/routes/__root.tsx",
+      "sha256": "8c54d335048f90c3f3c703f758c01f3d02d3ddfd16b9d91dbc46972f513c9bb3"
+    },
+    {
+      "path": "apps/momo/src/renderer/static/globals.css",
+      "sha256": "293a6919ab66d45c57ef94f3cfab4d13882967b20179597bdb14b9372d916b87"
+    },
+    {
+      "path": "apps/momo/src/renderer/static/index.css",
+      "sha256": "663118d031bc52881881271b9e8c54aefef32d94f6b5a9ecd5d111abc306d5ec"
+    },
+    {
+      "path": "apps/momo/src/renderer/components/common/ScalableIcon.tsx",
+      "sha256": "7e57f2cd39fc8f695fdf8b4cd1f84eb252065376cf5fa863c2216bcfa55e4ec4"
+    },
+    {
+      "path": "apps/momo/src/renderer/components/common/Divider.tsx",
+      "sha256": "4e0864b77224883b68dc71d726d05d72a6e36fc8186cb7add5fe73e712901f2a"
+    },
+    {
+      "path": "apps/momo/src/renderer/hooks/useScreenChange.ts",
+      "sha256": "8fe0e2f236d5d1dc42e2e96be00ef0d488ddc49678e6bb40dd9cd356459d7885"
+    },
+    {
+      "path": "apps/momo/src/renderer/hooks/useAppTheme.ts",
+      "sha256": "281e80c1e9243d3160e5530be0831e97ea84ecbd3622da79f16e2694f9d677b4"
+    },
+    {
+      "path": "apps/momo/src/renderer/static/momo-mark.svg",
+      "sha256": "5a17fa3f39b656f1a4ede0dad12d181fc6e58650901663efcd53bf09f5e323c4"
+    },
+    {
+      "path": "apps/momo/src/renderer/components/icons/HomepageIcon.tsx",
+      "sha256": "b26f690bcb2bae322cc8cbb04cabee37ee27b4cda693147d9bdf47bf9bc631db"
+    },
+    {
+      "path": "apps/momo/src/shared/theme-colors.ts",
+      "sha256": "d3b18ed2759e52b912a7f9e60478f2a2db8cbfc7b779a520c8bdc09d7fe2e704"
+    },
+    {
+      "path": "apps/momo/src/renderer/components/common/MessageLayoutPreview.tsx",
+      "sha256": "cee5eb1bedde8594996538932f70669ac07e6ecc345949e4e274852831f8093f"
+    },
+    {
+      "path": "apps/momo/src/renderer/components/common/InterfaceColorInput.tsx",
+      "sha256": "db47f7b85fa92a70c3c4ec43b69796a9c6e52992a289499fbc802e9bebca75dc"
+    },
+    {
+      "path": "apps/momo/src/renderer/components/common/LazySlider.tsx",
+      "sha256": "600ebfc2c93829eb3ab5b4486314ce8314817d13da81f72123cb239477149586"
+    },
+    {
+      "path": "apps/momo/src/renderer/components/common/SliderWithInput.tsx",
+      "sha256": "7a062bba50fe586e487ff9620381036636e862ce0bb84349fe31a2fb9f67417c"
+    },
+    {
+      "path": "apps/momo/src/renderer/components/InputBox/inputSurface.ts",
+      "sha256": "4dcea23a47825724ee0ff336da6ba2a0e9eaf2fa96532382a02324e294d5d65e"
+    },
+    {
+      "path": "apps/momo/src/renderer/components/InputBox/MessageInputField.tsx",
+      "sha256": "a3d2a6fd4946ae8d73024c7d143083315d279f4e536df59f7885f31f1069e2ed"
+    },
+    {
+      "path": "apps/momo/src/renderer/i18n/locales/zh-Hans/translation.json",
+      "sha256": "bf86117a68bdd1b9ec9dfea5194e4a4f771dd69b7db8fc805f45258152c2f27b"
+    },
+    {
+      "path": "apps/momo/src/renderer/i18n/locales/zh-Hant/translation.json",
+      "sha256": "a033469010e434e1acf17ea597b6ec6287e05fa11b4e32e69957ae9638091143"
+    },
+    {
+      "path": "apps/momo/src/renderer/i18n/locales/en/translation.json",
+      "sha256": "2ca20865a24f9dc5be713c8a90415df32f01cdb73bf349e377c0fa9b3c342a06"
+    },
+    {
+      "path": "apps/momo/src/renderer/i18n/locales/ja/translation.json",
+      "sha256": "06e89b59f8f3505f74a34fc5ed874c5a3846f7fd19bd5d1f1691253d0f6abc5a"
+    },
+    {
+      "path": "apps/momo/src/renderer/i18n/locales/ko/translation.json",
+      "sha256": "1e0316c6400ffefee917cc9b53801dd44ff414d91998450a99a34e5bd699e230"
+    },
+    {
+      "path": "apps/momo/src/renderer/i18n/momo-resources.ts",
+      "sha256": "ad2b9d5fe59ed85b3c6205d63d4606e5d9c394c8cc15ad1d4e6b8c00366b4953"
+    },
+    {
+      "path": "apps/momo/src/renderer/i18n/auth-error-overrides.ts",
+      "sha256": "7437b4376ee7783688d16268051836e421c0bd6786b64dcfcdf8c7504897b000"
+    },
+    {
+      "path": "apps/momo/src/renderer/routes/settings/general.tsx",
+      "sha256": "1a4a3ca33ac987b368c2baf0a164a8bf4f1732246b153b18bdbda075ea8302e9"
+    },
+    {
+      "path": "apps/momo/src/renderer/routes/settings/chat.tsx",
+      "sha256": "f4159c873f063ac85ec2723a9fe7e6e7d3adb0780c1d7fee494be8d4dbcd7a7e"
+    },
+    {
+      "path": "apps/momo/src/renderer/Sidebar.tsx",
+      "sha256": "1c96b3083fa687ff0466a75299bb77c0ce81bc26d95c8245b89d52436fdd8fb7"
+    },
+    {
+      "path": "apps/momo/src/renderer/components/layout/Page.tsx",
+      "sha256": "0123e657c1c29d3c44640ddc9bda6e6df59e3693f43a54e58b6cdb85f94deb3a"
+    },
+    {
+      "path": "apps/momo/src/renderer/routes/index.tsx",
+      "sha256": "e7ad57f6493fc09e879c77c808d2a4362d860da6f2c8116814b9272f4e160121"
+    },
+    {
+      "path": "apps/momo/src/renderer/components/InputBox/InputBox.tsx",
+      "sha256": "d1761136c2ba7cdd4cb1a311fad8a44271147f560f9ade43c557ecd302b49439"
+    },
+    {
+      "path": "apps/momo/src/renderer/components/chat/Message.tsx",
+      "sha256": "148941dcf15577964c6f45f7574d55af4f32ef9b14ba0deb4c14323a14184cbb"
+    },
+    {
+      "path": "apps/momo/src/renderer/components/session/SessionItem.tsx",
+      "sha256": "b9341e9db485dc340037e7673b793b9ce3fdf987986c211ab581c51fc1f1d42f"
+    },
+    {
+      "path": "apps/momo/src/renderer/routes/copilots/index.tsx",
+      "sha256": "68fb0dbb880c5b349b475e5cd395129a63f09de0d01939d842ea69fbde1d3fa9"
+    },
+    {
+      "path": "apps/momo/src/renderer/routes/copilots/-components/CopilotItem.tsx",
+      "sha256": "969f19947fbfedf4b9ae6f27372b3969007ae0e92150ecee1b54a3050be1d93a"
+    },
+    {
+      "path": "apps/momo/src/renderer/static/Block.css",
+      "sha256": "b6d48912f0c5012c2b9e1ff3ceb423fcc779efa844dd98f584080e08f36ab72c"
+    },
+    {
+      "path": "apps/momo/tailwind.config.js",
+      "sha256": "b1ad32e524335d8109f572dbd21ac80f3d2f9e5803aa0a7a5e3a5484f764d15f"
+    },
+    {
+      "path": "apps/momo/src/renderer/routes/settings/provider/$providerId.tsx",
+      "sha256": "39bb3e4528ff9b956822698815caf1026caa927f91dd63e4981f08e1ff0759f6"
+    },
+    {
+      "path": "apps/momo/src/renderer/components/settings/provider/ProviderList.tsx",
+      "sha256": "bdb89ed55d04ab51963d58aab23923990bc48e640218b3b2f80b3fae6c334b29"
+    }
+  ]
+}

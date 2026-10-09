@@ -1,0 +1,314 @@
+{
+  "repository": "MOMO-app",
+  "revision": "e664a9007fe523d1c3c24e9ad1edc7ce401e57ef",
+  "files": [
+    {
+      "source": "app/contracts/core.ts",
+      "sha256": "c40a5c4d4c438974ec468a6f8c911538ea19e8814cf95dd81cbb4ef16df8ac5e"
+    },
+    {
+      "source": "app/contracts/models.ts",
+      "sha256": "e17cc3fa11b1831a0e027148c2001ba6e8aa08bf32da420de14d982a232ffaf5"
+    },
+    {
+      "source": "app/contracts/parameter-policy.ts",
+      "sha256": "73dc5149c0963573d7943b1eda17433059c894c3c29abe04114de4ee39f94a9d"
+    },
+    {
+      "source": "app/contracts/parameters.ts",
+      "sha256": "366a819fdb8197b075ff423c45c5f2ffe806eac7b5a41e93f3b27742083e87dc"
+    },
+    {
+      "source": "app/contracts/spaces.ts",
+      "sha256": "5c9556d6677bb4a681ee555ab9d411184bb996a4cc2e2268d03c09d793c0e248"
+    },
+    {
+      "source": "app/features/chat/Chat.tsx",
+      "sha256": "d148a1e5950c13c7c8fa8f3720dc7bc97d821748b1740dc01c8aeeeb9c91ae83"
+    },
+    {
+      "source": "app/features/chat/stream.ts",
+      "sha256": "0843d565d6dabe6940a68685c091fad060433a310c8d6ce740e5a68bb6db9ebc"
+    },
+    {
+      "source": "app/features/spaces/SpaceSettings.tsx",
+      "sha256": "859959f7d091ae99c58a691f6a566a6528a39a7f4dc2754d27f5828ca3f96b35"
+    },
+    {
+      "source": "app/features/spaces/host.ts",
+      "sha256": "6f053239a343204043d1fe222f59c85df2c87d15ab803af0a93e147c505fa4de"
+    },
+    {
+      "source": "app/lib/server/actions.server.ts",
+      "sha256": "82c645d69c57832400e21c21f78c52af922354a637faeeb5ba8c847e72adb87a"
+    },
+    {
+      "source": "app/lib/server/core.server.ts",
+      "sha256": "62f607c84d724c045c0da15c4b20495de5932fdbd9918527f3368695c7b4a30e"
+    },
+    {
+      "source": "app/lib/server/parameters.server.ts",
+      "sha256": "004153d5a7391957831bb479f7478ffbc5ef31db38be2d147e9d1a3910e8b678"
+    },
+    {
+      "source": "app/lib/server/resolve-parameters.server.ts",
+      "sha256": "51feda9b2c37ab597eae582020f7feb95016fc15fb2f0b2a39f97ca1785eb110"
+    },
+    {
+      "source": "app/lib/server/spaces.server.ts",
+      "sha256": "458350b15ccf6898d50f10206d270109a411576184482b6d791c38a823f0d3ce"
+    },
+    {
+      "source": "app/lib/transport.ts",
+      "sha256": "159fb77efae0108b6e188c63718a2d85448177edcf615171653d4634c6856a82"
+    },
+    {
+      "source": "app/routes/api.cancel.ts",
+      "sha256": "52f36d193d1dddeaceade21f895a1eadfb055fe749dd143a11f401c33c79e214"
+    },
+    {
+      "source": "app/routes/api.characters.ts",
+      "sha256": "d39c8662e79e881de97aeff4829316cfb3e85d4442cb9ea815f0ed0360e4a91f"
+    },
+    {
+      "source": "app/routes/api.chat.ts",
+      "sha256": "9ca0ee5c4325a84fc9b49a95c73b2d733fcf9662223308b778a8c968afa1bd79"
+    },
+    {
+      "source": "app/routes/api.conversations.ts",
+      "sha256": "e7c6650e3eaf5372a44633a8a63e422e83efbbf6e29f47d9e2f135417dc88fee"
+    },
+    {
+      "source": "app/routes/api.models.ts",
+      "sha256": "fa77df678733cb90303b72a861ebda25f6a1234a9c4825585c431b1726bb60da"
+    },
+    {
+      "source": "app/routes/api.parameters.ts",
+      "sha256": "768247d3fa66d357312dffd624d65c93b13311065681d0f61babaf0c72005144"
+    },
+    {
+      "source": "app/routes/api.resources.ts",
+      "sha256": "821612ecde0f81b15820d0d862de5e5d7927e30343415abfa33b08482e461929"
+    },
+    {
+      "source": "app/routes/api.spaces.ts",
+      "sha256": "f2ff9b8a18ac9847a15e7eb655259fa0c8780f1306270a60bb73a5a0288e403f"
+    },
+    {
+      "source": "app/routes/api.workspace.ts",
+      "sha256": "ad3283ebc99e812e4c0c8fa7c8f5ca07651c71ad18e83ebcd2d01ac8921f8276"
+    },
+    {
+      "source": "app/ui/web/Assets.tsx",
+      "sha256": "0b65e4e4cfa08b2624ebad373e312726247d40663b97690e8979b573bf07f3c4"
+    },
+    {
+      "source": "app/ui/web/Block.css",
+      "sha256": "b6d48912f0c5012c2b9e1ff3ceb423fcc779efa844dd98f584080e08f36ab72c"
+    },
+    {
+      "source": "app/ui/web/ChatSettings.tsx",
+      "sha256": "121ed0254263d9418ec31073f9f8aa9b5f3bafc27f5eef13995e301c4a022e43"
+    },
+    {
+      "source": "app/ui/web/ClientEntry.tsx",
+      "sha256": "1dcdd919671e6e8ede928d4935fe54225edd2e214cb6ac98613b734fc2058f32"
+    },
+    {
+      "source": "app/ui/web/CoreSettings.tsx",
+      "sha256": "e678e7e842352319083ee9974444bdcc89a53f8e009ac5e9a6524ecb4d084708"
+    },
+    {
+      "source": "app/ui/web/Divider.tsx",
+      "sha256": "185ef44e446ffa9926d4f1f9d0ab3ada5e70df78e0bb523894b8f47455448111"
+    },
+    {
+      "source": "app/ui/web/GeneralSettings.tsx",
+      "sha256": "929f5705553ed17a0175326f64651ecbfaec768ca133ed82d0669aa377964530"
+    },
+    {
+      "source": "app/ui/web/Home.tsx",
+      "sha256": "b9a00d5db8add61da613da534ca10c3c9230733aa5ea762e0694df382a67b35b"
+    },
+    {
+      "source": "app/ui/web/HomepageIcon.tsx",
+      "sha256": "3c34cb37628bfcd0b173ef42da58ef7ce97462aebadd9a9d2c5c984a491bb1ef"
+    },
+    {
+      "source": "app/ui/web/InputBox.tsx",
+      "sha256": "d20af39ee173f247d29500672f35cd8cfd122cda2202bd4017c4665c8a180132"
+    },
+    {
+      "source": "app/ui/web/InterfaceColorInput.tsx",
+      "sha256": "a6c6c0cef975bc44225d77075aab29ee029f696d26c84ff48c025dbd3890106f"
+    },
+    {
+      "source": "app/ui/web/LazySlider.tsx",
+      "sha256": "c9ba6bfd633aa85bae689276441d0b96dcb0b74f028012683b6791410190f803"
+    },
+    {
+      "source": "app/ui/web/MessageInputField.tsx",
+      "sha256": "3b113d8aa9f6b683212c303f3912f79a56a36a2caa815bd7de68e5ed75ce3f4a"
+    },
+    {
+      "source": "app/ui/web/MessageLayoutPreview.tsx",
+      "sha256": "a2b308e930b9571f8c9b55761095cdba93b885d4ce36c54da31628d71a3de189"
+    },
+    {
+      "source": "app/ui/web/ModelPicker.tsx",
+      "sha256": "1d0d21515dfdf1954d9af1646475e797e3f9445c5c041352f18621f14fefbbe5"
+    },
+    {
+      "source": "app/ui/web/Page.tsx",
+      "sha256": "268d4224bca6f5e40f7f92cdf99df93eeb0e452ff39849a26bf51163fdd32b22"
+    },
+    {
+      "source": "app/ui/web/ProductSettings.tsx",
+      "sha256": "3a12da7ce97b71b88afafc3b27bed0a840c35cc91ab0aea587ecee821d89531c"
+    },
+    {
+      "source": "app/ui/web/ProviderSettings.tsx",
+      "sha256": "f632eaa332dfd9147618a56db0d27f32d6834b5b97308a9c20d987c9ed19fefb"
+    },
+    {
+      "source": "app/ui/web/Roles.tsx",
+      "sha256": "bc2dec132946be358c5330586c80424c136b8f88b39228fca8433a88f704c889"
+    },
+    {
+      "source": "app/ui/web/ScalableIcon.tsx",
+      "sha256": "70b1897b5521c65cf5dd75499ae80ed6a89d65c8350a99c3a47369f6fe3d41a1"
+    },
+    {
+      "source": "app/ui/web/Sessions.tsx",
+      "sha256": "5a4c160918f906bdbd2b650881fcc854e40f2eda27eaebde997384314710b1bc"
+    },
+    {
+      "source": "app/ui/web/Settings.tsx",
+      "sha256": "e8fea07f7ec2cf1eca4a70d3a37b839dc67100e9a51ce0607da2f09c06cf863e"
+    },
+    {
+      "source": "app/ui/web/Sidebar.tsx",
+      "sha256": "9b92e06a713d097f8ca9ddcd53c4a678f69baeb371e2de5edf9e361b1d34a8f4"
+    },
+    {
+      "source": "app/ui/web/SliderWithInput.tsx",
+      "sha256": "17a436bec0d5bb86e6e013cdce83e8438c86658fe184334a6c43e4fa2908e7ec"
+    },
+    {
+      "source": "app/ui/web/WebApp.tsx",
+      "sha256": "2e113e3a90a7bcd221a8f171bebe1d1fb63e53c7e29a0c6f3e6e989753af98f9"
+    },
+    {
+      "source": "app/ui/web/api.ts",
+      "sha256": "703478b0733d3584a66dc61c28bdbca9b8bb0781f12e36b9be7c31a6cf1d1e2a"
+    },
+    {
+      "source": "app/ui/web/context.ts",
+      "sha256": "b3c29b57e29d35b4869fbc77ea888e79acde67c650489a4476c5b1942e81ad84"
+    },
+    {
+      "source": "app/ui/web/i18n/auth-error-overrides.ts",
+      "sha256": "e047d1febb3656ed03a1b15182a0063953dd944f98a3bcf340e07520985c2e9f"
+    },
+    {
+      "source": "app/ui/web/i18n/en.json",
+      "sha256": "2ca20865a24f9dc5be713c8a90415df32f01cdb73bf349e377c0fa9b3c342a06"
+    },
+    {
+      "source": "app/ui/web/i18n/index.ts",
+      "sha256": "3ece9122d4498bed7874a71c09fbc20837ddae5097cb862e9340079fae845e25"
+    },
+    {
+      "source": "app/ui/web/i18n/ja.json",
+      "sha256": "06e89b59f8f3505f74a34fc5ed874c5a3846f7fd19bd5d1f1691253d0f6abc5a"
+    },
+    {
+      "source": "app/ui/web/i18n/ko.json",
+      "sha256": "1e0316c6400ffefee917cc9b53801dd44ff414d91998450a99a34e5bd699e230"
+    },
+    {
+      "source": "app/ui/web/i18n/momo-resources.ts",
+      "sha256": "916f483a17c47cb551b61d3e0bf66f0dcf2cc8ff355a683282e0064c7bc9fd71"
+    },
+    {
+      "source": "app/ui/web/i18n/types.d.ts",
+      "sha256": "5020e790fa8aaecda1e753681c8639de6a26ca386dababca9df5166f29d686d2"
+    },
+    {
+      "source": "app/ui/web/i18n/zh-Hans.json",
+      "sha256": "bf86117a68bdd1b9ec9dfea5194e4a4f771dd69b7db8fc805f45258152c2f27b"
+    },
+    {
+      "source": "app/ui/web/i18n/zh-Hant.json",
+      "sha256": "a033469010e434e1acf17ea597b6ec6287e05fa11b4e32e69957ae9638091143"
+    },
+    {
+      "source": "app/ui/web/inputSurface.ts",
+      "sha256": "ee9a081292c8385e722547d4b8eafbf9d0a960d3bcaec93a225af56acfd1c3ff"
+    },
+    {
+      "source": "app/ui/web/media.tsx",
+      "sha256": "7d21a6b44d2edb62a037e870ecb25bc97a8740523c34078c333f7b25cb9906cd"
+    },
+    {
+      "source": "app/ui/web/original.css",
+      "sha256": "0ace3b5b7ec789c11834d44ad5cf7a829487ce382dc1280a256fe8dfb13bb105"
+    },
+    {
+      "source": "app/ui/web/settings.css",
+      "sha256": "5cebf7fd8b5522bf309a4776dff998bb5e4e078726475f1182923bd94661e4eb"
+    },
+    {
+      "source": "app/ui/web/store.tsx",
+      "sha256": "1d9e8f240c676d5cb510b4f03b7acdd1b8be0bc03f0db37406d711a57d47810f"
+    },
+    {
+      "source": "app/ui/web/theme-colors.ts",
+      "sha256": "37d080593111818e3eae3e740b4c94d6ac8c48cdd24aa51a94b75f5dcbd880ca"
+    },
+    {
+      "source": "app/ui/web/theme.ts",
+      "sha256": "35ebca42a7e18a6eb1b3ee7cb7d6ee4751d05672004367c6995db61d924d1f67"
+    },
+    {
+      "source": "app/ui/web/tokens.css",
+      "sha256": "293a6919ab66d45c57ef94f3cfab4d13882967b20179597bdb14b9372d916b87"
+    },
+    {
+      "source": "public/momo.svg",
+      "sha256": "5a17fa3f39b656f1a4ede0dad12d181fc6e58650901663efcd53bf09f5e323c4"
+    },
+    {
+      "source": "tests/core.test.ts",
+      "sha256": "6b8944323c5722d71db13034a6300dfc14fb4eabe181c426324a7c6ae3ff588f"
+    },
+    {
+      "source": "tests/parameters.test.ts",
+      "sha256": "9ea13733056414deb077e29b0ffee70abefe73ad6809623e88a08804ffcee9fb"
+    },
+    {
+      "source": "tests/resources.integration.ts",
+      "sha256": "ad66f8f995b158a64237daa23996fbe9022079644336139b35fe9de5b6c78edd"
+    },
+    {
+      "source": "tests/spaces.integration.ts",
+      "sha256": "72b64b8fd812b22fb7bbd4b159785ae4927da68cc69a483311867be749d27bfc"
+    },
+    {
+      "source": "tests/spaces.test.ts",
+      "sha256": "de3ac7b62369020ec2d236bc8a75eec887fb0811441c4fb46c998e1760081788"
+    },
+    {
+      "source": "tests/stream.test.ts",
+      "sha256": "6cf6acb6168095fc35460e2ec35dfadd8a36da8a70b4641539822a54cf2b4392"
+    }
+  ],
+  "coreRuntimeRevision": "32c2088d96b93d2d985950c5898fbe556f373d24",
+  "mapping": "app/* -> apps/momo/src/product/*; app/ui/web inherits the original MOMO-web/Chatbox GPL-3.0 notices; tests/* -> apps/momo/test/product/*; contracts/fixtures + licenses/momo-core -> apps/momo/test/",
+  "adaptations": [
+    "Remix type-only handler imports replaced with framework-neutral HTTP types",
+    "Web host independently builds Node HTTP/SSE adapter",
+    "Original renderer HTML starts the restored Core UI",
+    "Tests run against actual Web HTTP and isolated Core"
+  ]
+}

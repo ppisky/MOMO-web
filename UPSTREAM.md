@@ -15,7 +15,7 @@
 
 2026-10-09 用户决定回到原仓库，移除 Electron，先完成网页。删除 main/preload、桌面 IPC 和存储、electron-vite/electron-builder/webpack 工具链、生产包清单及相关依赖。网页用原 Vite 独立构建；旧桌面源码在 Git 历史中可追溯，忽略的旧构建目录不纳入当前构建。
 
-当前原网页仍使用 Chatbox 业务包和浏览器存储，MOMO-core 接入待实施；MOMO-app 和 ron 保留成果、暂停新增开发。见 [0006](docs/decisions/0006-web-first.md)。旧原型在 legacy/ui-prototype，不参与构建。
+随后按用户纠正，从 MOMO-app e664a9007fe523d1c3c24e9ad1edc7ce401e57ef 迁回 Core 接入和已适配的原 Web UI，放在 apps/momo/src/product，来源文件哈希见 [清单](docs/sources/core-ui-restoration.json)。运行时采用 Core 32c2088d96b93d2d985950c5898fbe556f373d24；Node Web 宿主独立维护，未迁入 ron/Remix 运行时。旧 renderer 和旧 IndexedDB 数据保留，但不参与活动聊天。见 [0007](docs/decisions/0007-preserve-core-progress.md)。Core wire fixture 与许可证保留在 apps/momo/test/contracts 和 test/licenses。
 
 ## 工具兼容
 

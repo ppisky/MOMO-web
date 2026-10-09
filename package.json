@@ -15,7 +15,10 @@
     "test:roleplay": "pnpm --dir apps/momo exec vitest run src/shared/momo-policy.test.ts src/renderer/setup/momo-migration.test.ts src/renderer/setup/init_data.test.ts src/renderer/adapters/CurrentPlatformCapabilities.test.ts src/renderer/stores/session/agent-mode.test.ts src/renderer/stores/session/__tests__/tools-builder.test.ts src/renderer/stores/session/prompt-context-snapshot.test.ts src/renderer/stores/agentPersonaStore.test.ts src/shared/theme-colors.test.ts src/renderer/hooks/useAppTheme.test.ts src/renderer/utils/request.test.ts",
     "test:settings": "pnpm --dir apps/momo exec vitest run src/shared/momo-settings.test.ts src/renderer/i18n/momo-resources.test.ts src/shared/providers/momo-custom.test.ts src/shared/utils/custom-api-endpoint.test.ts src/shared/providers/definitions/models/custom-provider-proxy.test.ts",
     "preview": "pnpm --dir apps/momo preview",
-    "check:web": "pnpm --dir apps/momo check:web"
+    "check:web": "pnpm --dir apps/momo check:web",
+    "test:product": "pnpm --dir apps/momo test:product",
+    "test:product:resources": "pnpm --dir apps/momo test:product:resources",
+    "test:product:spaces": "pnpm --dir apps/momo test:product:spaces"
   },
   "devDependencies": {
     "pnpm": "10.33.0"

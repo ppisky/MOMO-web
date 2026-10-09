@@ -1,3 +1,22 @@
+# Web 既有 Core 功能恢复验证
+
+日期：2026-10-09。Web 基线 d25351d；迁入来源 MOMO-app e664a9007fe523d1c3c24e9ad1edc7ce401e57ef；独立 Core 测试使用 32c2088d96b93d2d985950c5898fbe556f373d24。本轮未修改 Core 或 ron。
+
+- pnpm check 严格类型、pnpm check:web、pnpm build 通过。浏览器产物与 Node 宿主分别构建；实际客户端模块图排除服务端模块和 Electron。
+- 新增宿主、入口与 HTTP 测试文件的 Biome check（6 个文件）通过。
+- pnpm test:product：28 项通过，含 Core DTO、Space CAS/迁移、参数快照/空值、SSE 终态/断流与新增 HTTP Host/Origin/白名单、64 KiB 定长/分块输入限制、首块实时返回及断开取消。
+- pnpm test:product:resources：真实 Web HTTP 宿主 → 独立 Core → 离线模型，通过角色编辑/默认助手/历史、模型发现/凭据脱敏、参数策略/用途/实际请求、幂等重放、提示词保存恢复、资产读取和 Space 隔离。
+- pnpm test:product:spaces：独立真实 Core 与宿主 SQLite，资产清点、迁移保留身份、删除和最后一个空间保护通过。
+- 只读对比 1212 与原 App 的 workspace、parameters、models、memory、NSG、两份 provenance，响应一致。现有 2 个空间、当前 1 个角色/1 个对话、1 条记忆/1 个 NSG 节点沿用同一数据；没有复制、删除或重建资产。
+- 浏览器 1212：独立记忆能点击查看原内容，NSG 显示原节点；设置有模型参数组/用途模型、留空继承说明，无快捷键导航。
+- 浏览器隔离生产 preview 12209：真实键盘 Shift+Enter 保留两行草稿，Enter 经真实 Core 获得离线模型回复；刷新后恰好 user/assistant 两条历史。参数页面把温度/Top P/最大输出清空并保存，API 持久值全部 null，刷新仍为空，无 0 占位。浏览器控制台无 error/warn。隔离测试进程已结束。
+- 不覆盖真实付费模型、完整记忆/NSG 编辑、完整角色卡/开场白、归档/分支/篇章及 ron 桌面。保留既有缺口，见 product-boundaries.md。
+- 构建保留体积提示（主 chunk 大于 500 KiB）和既有 Tailwind 工具类提示；pnpm 启动器 Node 22 引擎警告与实际脚本 Node 26 已区分。不是全仓 lint 零警告声明。
+
+以下保留上一轮清理的历史证据，其“未接 Core/快捷键待移除”描述已由本轮更正，不能作为当前行为。
+
+---
+
 # 网页清理验证记录
 
 日期：2026-10-09。基线：完整源码快照 `5f37630dfbb4d7007ea8b1abddfdce1721b117a9`。本轮只验证原 MOMO-web 移除 Electron 后的网页，不将结果写成 Core 或 ron 完成。

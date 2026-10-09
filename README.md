@@ -1,46 +1,31 @@
 # MOMO Web
 
-基于 [Chatbox](https://github.com/chatboxai/chatbox) 源码的紫色角色对话网页，活动源码在 `apps/momo`。2026-10-09 按用户决定回到本仓库，移除 Electron，先调好原网页；MOMO-app 开发与 ron 兼容暂缓。沿用原来的页面和业务操作。
+基于 Chatbox 原界面的 MOMO 网页，活动源码在 apps/momo。已移除 Electron。回到原仓库继续开发时，保留 MOMO-app 已完成的 Core 接入、角色、独立记忆/NSG、空间、模型参数组和提示词；ron 兼容暂缓。此前只启动旧 renderer 的回退已纠正，见 [0007](docs/decisions/0007-preserve-core-progress.md)。
 
 ## 运行
 
-使用 pnpm **10.33.0**。应用运行时锁定 Node.js **26.11.1**，由 pnpm 的 devEngines.runtime 提供；根目录启动器支持系统 Node 22.20+。
+使用 pnpm 10.33.0。应用脚本使用 pnpm 提供的 Node 26.11.1，根目录启动器支持系统 Node 22.20+。
 
-```sh
-pnpm install
-pnpm setup
-pnpm dev
-```
+1. 根目录执行 pnpm install、pnpm setup。
+2. 单独启动兼容的 MOMO-core；已验证 revision 为 32c2088d96b93d2d985950c5898fbe556f373d24。
+3. 复制 apps/momo/.env.example 为 .env.local，填写 MOMO_CORE_ORIGIN（仅 loopback）。已有配置必须让 MOMO_APP_DATA_DIR 指向原 host-config.sqlite3 所在目录，保留 Space ID、参数组和当前空间；不搬动或重新初始化 Core 数据。
+4. 根目录执行 pnpm dev，打开 http://127.0.0.1:1212/。
 
-打开 http://127.0.0.1:1212/。dev 直接启动原网页，不需要 Electron。若全局 pnpm 版本不同，首次用 `npx --yes pnpm@10.33.0 install`，之后 Windows 可用 `./node_modules/.bin/pnpm.cmd` 执行上述命令。
+本机 .env.local 已连接既有 Core 和既有宿主配置，不提交这些本地路径。新安装未配置时 Core 默认 http://127.0.0.1:8765，宿主目录默认 LOCALAPPDATA/MOMO-App。若全局 pnpm 不一致，可先 npx --yes pnpm@10.33.0 install，再使用根目录 node_modules/.bin/pnpm.cmd。
 
-```sh
-pnpm typecheck
-pnpm check:web
-pnpm test:roleplay
-pnpm test:settings
-pnpm build
-pnpm preview
-```
+生产执行 pnpm build、pnpm preview。build 同时生成 dist/web 浏览器资源和 dist/host 服务端模块；preview 使用相同 /api 适配，默认端口 1212。需要停止占用该端口的 dev。不能仅部署静态文件而省略 API 宿主。
 
-生产文件输出到 `apps/momo/dist/web`。preview 同样监听 127.0.0.1:1212，先停止占用该端口的 dev。静态服务器需对页面路由回退到 index.html，按根目录部署。桌面启动、安装包、自动更新和 Electron 依赖已删除。
+## 当前能力
 
-## 当前能力和边界
+- Core 角色列表、基本编辑、默认助手、对话创建/改名、历史、流式回复/取消/重试。
+- 独立记忆 /memory、语义网 /nsg：读取现有资产、筛选和查看正文/节点，仍是只读页。
+- 空间创建/改名/切换，以及带资产清点、用户选择和冲突处理的删除/迁移；至少保留一个。
+- 自定义模型服务商、对话/视觉/向量化分类；模型参数组、用途路由和策略。温度、Top P、最大输出留空继承，最大输出不能为 0。
+- 提示词空间、记忆/NSG 维护策略、对话显示与外观设置。Enter 发送、Shift+Enter 换行，IME 不发送；没有快捷键设置和“仅保存不回复”。
 
-保留原版角色、头像与背景、手动故事记忆、聊天、重试、分支、新篇章、归档/恢复和自定义 API 连接。语言保留简体中文、繁体中文、日语、韩语和英文。
+Core 拥有角色、会话、记忆和 NSG；Web 宿主保存空间目录和参数组。浏览器只保存界面偏好/装饰资源，活动入口不再运行旧 IndexedDB 聊天引擎。旧 renderer 源码和浏览器数据保留，没有清空或偷偷导入另一套数据。
 
-服务商列表初始为空，在设置中添加自定义服务商、协议、地址、可选密钥和模型 ID。浏览器直接请求所填地址，服务端须允许当前网页来源的 CORS。不提供公共转发代理，不向 Chatbox 发送模型凭据。保留 OpenAI Chat Completions、OpenAI Responses、Anthropic Messages、Google Gemini 协议适配；真实供应商按各服务单独验证。
+完整角色卡（作者、用户设定等）、开场白落入真实上下文、完整记忆/NSG 编辑与来源/范围投影、Core 归档/分支/篇章仍有缺口，不能把入口恢复当作全部业务完成。继续依据 [产品边界](docs/product-boundaries.md) 和 [计划](docs/roadmap.md) 实施。
 
-当前网页沿用 Chatbox 业务服务和浏览器 IndexedDB，**尚未接入 MOMO-core**。数据随网页 origin（协议、主机、端口）隔离，不读取 Electron 的本地数据目录，也不新增旧桌面数据导入。现有网页数据保留。
-
-Core 角色完整字段与真实开场白、独立记忆/NSG、空间、参数组及固定 Enter/Shift+Enter 规则仍须逐项落实。原页现有的参数零值说明、会话参数副本和快捷键设置是待调整项；开场白参与真实历史和上下文的决定不再待确认。
-
-账号、订阅、在线角色市场、内置云模型、搜索、画图、知识库、MCP、技能和工作模式仍停用。残留上游类型或组件不代表可用能力，本地命令/stdio 不会伪装成浏览器功能。
-
-- [当前架构](docs/architecture.md)
-- [开发和验收](docs/development.md)
-- [网页优先决定与产品边界](docs/decisions/0006-web-first.md)
-- [验证记录](docs/validation.md)
-- [后续计划](docs/roadmap.md)
-- [来源和定制范围](UPSTREAM.md)
-- [GPL-3.0 许可证](LICENSE)
+- [架构](docs/architecture.md) · [开发和验证](docs/development.md) · [验证记录](docs/validation.md)
+- [来源](UPSTREAM.md) · [GPL-3.0](LICENSE)

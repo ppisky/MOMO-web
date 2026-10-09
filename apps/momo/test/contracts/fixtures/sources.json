@@ -1,0 +1,14 @@
+{
+  "project": "MOMO-core",
+  "revision": "7684dc0d2b1b0112d9cac1879d50beadaed3ffef",
+  "license": "Apache-2.0",
+  "normalization": "UTF-8 LF; semantic fixture content unchanged",
+  "files": [
+    { "upstream": "contracts/1.0/response_request.json", "local": "response_request.json", "sha256": "b0bd159c0fdcc55656013f375ae76a5b7c8ac066fa2dc7369620e34ea21d9b33" },
+    { "upstream": "contracts/1.0/response_stream.sse", "local": "response_stream.sse", "sha256": "b71ef0409b2a90c0a1cb242e66579a5dd98a65a86734836cde4ffc4bb5334f50" }
+  ],
+  "notices": [
+    { "path": "../../licenses/momo-core/LICENSE", "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30" },
+    { "path": "../../licenses/momo-core/NOTICE", "sha256": "31aeedc9e1a7aa3fd1d7442b70b871c6fe7d2bc7fd24da4a3e7633ceedb1966b" }
+  ]
+}

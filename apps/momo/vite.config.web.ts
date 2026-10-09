@@ -1,19 +1,23 @@
 import path from 'node:path'
-import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
+import { loadEnv } from 'vite'
+import { productHost } from './scripts/product-host-plugin'
 import react from '@vitejs/plugin-react'
 import { defineConfig, type Plugin } from 'vite'
 
 function browserBoundary(): Plugin {
   return {
     name: 'momo-browser-boundary',
-    resolveId(source) {
+    resolveId(source, _importer, options) {
+      if (!options?.ssr && (/\.server(?:\.|$)/.test(source) || source.startsWith('node:'))) {
+        this.error('Server module cannot enter the browser: ' + source)
+      }
       if (/^(?:electron(?:\/|$)|electron-|@electron\/)/.test(source)) {
         this.error('Desktop dependency cannot enter the web build: ' + source)
       }
     },
     generateBundle() {
       for (const id of this.getModuleIds()) {
-        if (/\/src\/(?:main|preload)\//.test(id.replaceAll('\\', '/'))) {
+        if (/\/src\/(?:main|preload)\/|\.server\.[cm]?[jt]s$/.test(id.replaceAll('\\', '/'))) {
           this.error('Desktop source cannot enter the web build: ' + id)
         }
       }
@@ -21,16 +25,16 @@ function browserBoundary(): Plugin {
   }
 }
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, __dirname, '')
+  for (const key of ['MOMO_CORE_ORIGIN', 'MOMO_APP_DATA_DIR']) {
+    if (!process.env[key] && env[key]) process.env[key] = env[key]
+  }
+  return ({
   root: path.resolve(__dirname, 'src/renderer'),
   plugins: [
     browserBoundary(),
-    TanStackRouterVite({
-      target: 'react',
-      autoCodeSplitting: true,
-      routesDirectory: './src/renderer/routes',
-      generatedRouteTree: './src/renderer/routeTree.gen.ts',
-    }),
+    productHost(__dirname),
     react(),
     {
       name: 'momo-web-metadata',
@@ -82,4 +86,5 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: { include: ['mermaid'] },
-}))
+})
+})
