@@ -24,11 +24,11 @@ import {
   configurationCount,
   globalConfigNames,
   spaceConfigNames,
-  promptChoices,
   type ConfigurationSelection,
   type SpaceConfig,
   type GlobalConfig,
 } from '../../contracts/moc'
+import { promptChoices, promptSpaces } from '../../contracts/prompts'
 import {
   emptyExportSelection,
   chooseGroup,
@@ -108,6 +108,31 @@ export function MocExport() {
   const [selection, setSelection] = useState(emptyExportSelection)
   const { characterSpaces, allRoles, selectedRoles, scopes, configuration } = selection
   const [roles, setRoles] = useState<Character[]>([])
+  const [modifiedPrompts, setModifiedPrompts] = useState<string[]>([])
+  const [promptsReady, setPromptsReady] = useState(false)
+  const [promptError, setPromptError] = useState('')
+  useEffect(() => {
+    const abort = new AbortController()
+    setPromptsReady(false)
+    setPromptError('')
+    void api(`/api/resources?space=${data.spaceId}&kind=prompts`, undefined, abort.signal)
+      .then((value) => {
+        if (abort.signal.aborted) return
+        const ids = promptSpaces(value)
+          .filter((p) => p.source === 'override')
+          .map((p) => p.id)
+        setModifiedPrompts(ids)
+        setSelection((s) => ({
+          ...s,
+          configuration: { ...s.configuration, prompts: s.configuration.prompts.filter((id) => ids.includes(id)) },
+        }))
+        setPromptsReady(true)
+      })
+      .catch((e) => {
+        if (!abort.signal.aborted) setPromptError(e.message)
+      })
+    return () => abort.abort()
+  }, [data.spaceId])
   const [rangeMode, setRangeMode] = useState('current')
   const [customRange, setCustomRange] = useState<string[]>([])
   const [expanded, setExpanded] = useState<Record<ExportGroup, boolean>>({
@@ -185,10 +210,10 @@ export function MocExport() {
   ]
   const choice = (id: ExportGroup) => ({
     id,
-    state: selectionState(selection, id, range),
+    state: selectionState(selection, id, range, modifiedPrompts),
     expanded: expanded[id],
-    disabled: busy,
-    onToggle: (enabled: boolean) => setSelection((s) => chooseGroup(s, id, enabled, range)),
+    disabled: busy || (id === 'configuration' && !promptsReady),
+    onToggle: (enabled: boolean) => setSelection((s) => chooseGroup(s, id, enabled, range, modifiedPrompts)),
     onExpand: () => setExpanded((s) => ({ ...s, [id]: !s[id] })),
   })
 
@@ -255,6 +280,11 @@ export function MocExport() {
         先选范围，再决定带哪些内容。需要时展开细选。
       </Text>
       {error && <Alert color="red">{error}</Alert>}
+      {promptError && (
+        <Alert color="red" title="无法核对提示词导出资格">
+          {promptError}
+        </Alert>
+      )}
       {notice && <Alert color="green">{notice}</Alert>}
       <Select
         label="快速范围"
@@ -364,10 +394,15 @@ export function MocExport() {
         ))}
         <MultiSelect
           label="提示词空间（全局）"
-          placeholder="选择要导出的提示词"
-          data={Object.entries(promptChoices).map(([value, label]) => ({ value, label }))}
+          description="仅导出已修改的提示词。内置内容由 Core 提供，无需重复打包。"
+          placeholder={modifiedPrompts.length ? '选择已修改的提示词' : '没有已修改的提示词'}
+          data={Object.entries(promptChoices).map(([value, label]) => ({
+            value,
+            label: modifiedPrompts.includes(value) ? label : `${label}（内置）`,
+            disabled: !modifiedPrompts.includes(value),
+          }))}
           value={configuration.prompts}
-          disabled={busy}
+          disabled={busy || !modifiedPrompts.length || !promptsReady}
           onChange={(prompts) => setConfiguration({ ...configuration, prompts })}
         />
         <Divider label="个人空间配置" />

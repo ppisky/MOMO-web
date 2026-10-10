@@ -1,16 +1,20 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Alert, Textarea } from '@mantine/core'
-import { groupFromJson, parameterJson, type ParameterGroup } from '../../contracts/parameters'
+import { requestFromJson, requestParameterJson, type ParameterGroup } from '../../contracts/parameters'
 export function RequestParameterJson({
   group,
+  stream,
+  onStreamChange,
   onChange,
   onError,
 }: {
   group: ParameterGroup
+  stream: boolean
+  onStreamChange: (stream: boolean) => void
   onChange: (group: ParameterGroup) => void
   onError: (error: string) => void
 }) {
-  const source = JSON.stringify(parameterJson(group), null, 2)
+  const source = JSON.stringify(requestParameterJson(group, stream), null, 2)
   const [draft, setDraft] = useState(source),
     [failure, setFailure] = useState('')
   const applied = useRef('')
@@ -21,27 +25,31 @@ export function RequestParameterJson({
       onError('')
       applied.current = source
     }
-  }, [source])
+  }, [source, onError])
   return (
     <>
       <Textarea
         label="请求参数 JSON"
-        description="直接修改温度、top_p、max_output_tokens 或供应商参数。删除字段表示未设置；额外参数需获当前个人空间策略允许。"
+        description="stream 与流式开关同步，控制实际请求。温度、top_p、max_output_tokens 删除后跟随模型；删除 stream 保留当前开关。额外参数需获个人空间策略允许。"
         value={draft}
         autosize
         minRows={5}
         maxRows={18}
         spellCheck={false}
         styles={{ input: { fontFamily: 'monospace' } }}
+        onBlur={() => {
+          if (!failure) setDraft(source)
+        }}
         onChange={(e) => {
           const next = e.currentTarget.value
           setDraft(next)
           try {
-            const value = groupFromJson(group, JSON.parse(next))
-            applied.current = JSON.stringify(parameterJson(value), null, 2)
+            const value = requestFromJson(group, stream, JSON.parse(next))
+            applied.current = JSON.stringify(requestParameterJson(value.group, value.stream), null, 2)
             setFailure('')
             onError('')
-            onChange(value)
+            onChange(value.group)
+            onStreamChange(value.stream)
           } catch (error) {
             const message =
               error instanceof SyntaxError

@@ -46,6 +46,11 @@ const provider = httpServer(async (request, response) => {
   for await (const chunk of request) chunks.push(Buffer.from(chunk));
   const body = record(JSON.parse(Buffer.concat(chunks).toString()));
   requests.push({ authorization: request.headers.authorization, body });
+  if (body.stream !== true) {
+    response.writeHead(200, { 'Content-Type': 'application/json' });
+    response.end(JSON.stringify({ id: 'fixture-upstream', choices: [{ message: { role: 'assistant', content: '完整接入成功' }, finish_reason: 'stop' }] }));
+    return;
+  }
   response.writeHead(200, { 'Content-Type': 'text/event-stream' });
   response.end(
     `data: ${JSON.stringify({ id: 'fixture-upstream', choices: [{ delta: { content: '接入成功' }, finish_reason: 'stop' }] })}\n\ndata: [DONE]\n\n`,
@@ -237,6 +242,29 @@ try {
   });
   assert.ok((await replay.text()).includes('response.completed'));
   assert.equal(requests.length, count);
+  const completeId = crypto.randomUUID();
+  const historyBefore = await client.messages(defaults[0]!.id);
+  const complete = await call(chatAction, 'chat', {
+    spaceId: space, conversationId: defaults[0]!.id, requestId: completeId, input: 'non-stream', stream: false,
+  });
+  assert.equal(complete.status, 200, await complete.clone().text());
+  const completeEvents = (await complete.text()).split('\n\n').filter(Boolean);
+  assert.equal(completeEvents.length, 1);
+  assert.ok(completeEvents[0]!.includes('response.completed'));
+  assert.ok(completeEvents[0]!.includes('完整接入成功'));
+  assert.ok(requests.slice(count).some((r) => r.body.stream !== true && r.body.max_tokens === 256));
+  const completeCount = requests.length;
+  const afterComplete = await client.messages(defaults[0]!.id);
+  assert.equal(afterComplete.length, historyBefore.length + 2);
+  const completeReplay = await call(chatAction, 'chat', {
+    spaceId: space, conversationId: defaults[0]!.id, requestId: completeId, input: 'non-stream', stream: true,
+  });
+  assert.equal(completeReplay.status, 200);
+  assert.equal((await completeReplay.text()).split('\n\n').filter(Boolean).length, 1);
+  assert.equal(requests.length, completeCount);
+  assert.deepEqual(await client.messages(defaults[0]!.id), afterComplete);
+  assert.equal((await call(chatAction, 'chat', { spaceId: space, conversationId: defaults[0]!.id, requestId: crypto.randomUUID(), input: 'invalid', stream: 'true' })).status, 400);
+  console.log('PASS: actual streaming and non-streaming requests, single completion and frozen-mode replay without duplicate messages');
   const prompts = list(await get('prompts', space), record);
   assert.equal(prompts.length, 6);
   assert.equal(

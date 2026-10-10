@@ -5,6 +5,7 @@ import { mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import {
   parameters,
+  resolvedParameters,
   type Parameters,
   type ResolvedParameters,
 } from '../../contracts/parameters';
@@ -58,6 +59,7 @@ export function parametersForRequest(
   conversationId: string,
   input: string,
   catalog?: Models,
+  stream = true,
 ) {
   const database = db();
   database.exec(
@@ -71,10 +73,10 @@ export function parametersForRequest(
     .get(requestId);
   if (existing) {
     if (existing.fingerprint !== fingerprint) throw new CoreError(409, 'request_identity_changed');
-    return JSON.parse(String(existing.value)) as ResolvedParameters;
+    return resolvedParameters(JSON.parse(String(existing.value)));
   }
   const current = readParameters();
-  const group = resolveParameters(current, catalog);
+  const group: ResolvedParameters = { ...resolveParameters(current, catalog), stream };
   database
     .prepare('INSERT OR IGNORE INTO request_parameters VALUES(?,?,?)')
     .run(requestId, fingerprint, JSON.stringify(group));
@@ -83,5 +85,5 @@ export function parametersForRequest(
     .get(requestId);
   if (row?.fingerprint !== fingerprint) throw new CoreError(409, 'request_identity_changed');
   const stored = JSON.parse(String(row.value));
-  return stored as ResolvedParameters;
+  return resolvedParameters(stored);
 }

@@ -125,7 +125,7 @@ function ChatSession({
     try {
       const response = await post(
         '/api/chat',
-        { spaceId, conversationId, input, requestId },
+        { spaceId, conversationId, input, requestId, stream: settings.stream },
         run.controller.signal,
       );
       if (!response.body || !response.headers.get('Content-Type')?.includes('text/event-stream'))
@@ -138,20 +138,19 @@ function ChatSession({
           event.data.response && typeof event.data.response === 'object' ? record(event.data.response) : null;
         const usage =
           responseData?.usage && typeof responseData.usage === 'object' ? record(responseData.usage) : null;
-        if (settings.stream || state.terminal)
-          setMessages((values) =>
-            values.map((value) =>
-              value.id === assistantId
-                ? {
-                    ...value,
-                    content: state.text,
-                    ...(firstToken === undefined ? {} : { latency: firstToken }),
-                    ...(typeof responseData?.model === 'string' ? { model: responseData.model } : {}),
-                    ...(typeof usage?.total_tokens === 'number' ? { tokens: usage.total_tokens } : {}),
-                  }
-                : value,
-            ),
-          );
+        setMessages((values) =>
+          values.map((value) =>
+            value.id === assistantId
+              ? {
+                  ...value,
+                  content: state.text,
+                  ...(firstToken === undefined ? {} : { latency: firstToken }),
+                  ...(typeof responseData?.model === 'string' ? { model: responseData.model } : {}),
+                  ...(typeof usage?.total_tokens === 'number' ? { tokens: usage.total_tokens } : {}),
+                }
+              : value,
+          ),
+        );
         if (state.terminal) break;
       }
       if (state.terminal !== 'completed')

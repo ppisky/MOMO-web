@@ -1,5 +1,5 @@
 {
-  "webBaseline": "a70b54b5f78b5eda14a88371e6e0f8c9f23ab82a",
+  "webBaseline": "9c53c593059b9323187d1590b5e3ded5091e34c5",
   "coreRevision": "c44f5ffee737f5915f9baae20b49a33717eaced1",
   "coreSource": "MOMO-core independent repository, codex/space-lifecycle worktree",
   "previousCoreRevision": "60ae97aff99398b835311c716759d59d06dbce67",
@@ -7,7 +7,7 @@
   "pnpm": "10.33.0",
   "node": "26.11.1",
   "verified": "2026-10-10",
-  "scope": "Optional model context, governed JSON request parameters, memory lifecycle configuration, component-scoped MOC configuration export with quick choices and detailed scope control, unique general prompt editor and existing-data daily services",
+  "scope": "Override-only prompt export with quick and detailed MOC selection, explicit synchronized stream JSON and actual Core delivery mode with frozen retries, text model type naming and MO State profile explanations; retained optional context, governed parameters and existing-data services",
   "appChanged": false,
   "ronChanged": false
 }

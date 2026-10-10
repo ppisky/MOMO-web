@@ -6,7 +6,7 @@ export const protocols = [
   { value: 'gemini', label: 'Google Gemini' },
 ] as const;
 export const modelKinds = [
-  { value: 'chat', label: '对话' },
+  { value: 'chat', label: '文本' },
   { value: 'vision', label: '视觉' },
   { value: 'embedding', label: '向量化' },
 ] as const;

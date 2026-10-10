@@ -348,7 +348,7 @@ export async function verifyConfiguration({
   });
   assert.equal(configurationOnly.status,200,await configurationOnly.clone().text());
   const configurationTar=zstdDecompressSync(Buffer.from(await configurationOnly.arrayBuffer())).toString();
-  for (const module of ['models','parameters','preferences','personal-spaces','prompts','history-window','request-overrides','runtime','memory-lifecycle','mo-state','state-contract','roleplay','vision'])
+  for (const module of ['models','parameters','preferences','personal-spaces','history-window','request-overrides','runtime','memory-lifecycle','mo-state','state-contract','roleplay','vision'])
     assert.ok(configurationTar.includes('momo-web-'+module),module);
   assert.ok(configurationTar.includes('frequency_penalty'));
   assert.ok(configurationTar.includes('"context_window": null'));
@@ -357,6 +357,22 @@ export async function verifyConfiguration({
   assert.ok(!configurationTar.includes('local-reference-not-portable'));
   assert.ok(!configurationTar.includes(other));
   assert.ok(!configurationTar.includes('User changed'));
+  assert.ok(!configurationTar.includes('momo-web-prompts'), 'builtin prompts must not be exported');
+  const noAssets = { characters:[], conversations:[], memory:[], semantic_graph:[], compatibility:'none' };
+  const promptSelection = { global:[], personal_spaces:[], spaces:{}, prompts: list(await get('prompts', space), record).map((p) => p.id) };
+  assert.equal((await call('moc', { plan:noAssets, protection:{type:'none'}, configuration:promptSelection })).status, 400);
+  const builtins = list(await get('prompts', space), record);
+  await checked(await post({ spaceId:space, command:'prompt-save', id:'assistant', content:'Export override marker' }));
+  const overrideExport = await call('moc', { plan:noAssets, protection:{type:'none'}, configuration:promptSelection });
+  assert.equal(overrideExport.status,200,await overrideExport.clone().text());
+  const overrideTar = zstdDecompressSync(Buffer.from(await overrideExport.arrayBuffer())).toString();
+  assert.ok(overrideTar.includes('Export override marker'));
+  for (const builtin of builtins) assert.ok(!overrideTar.includes(JSON.stringify(builtin.content)), String(builtin.id));
+  // Saving the exact embedded body restores builtin ownership in Core.
+  await checked(await post({ spaceId:space, command:'prompt-save', id:'assistant', content:builtins.find((p) => p.id === 'assistant')!.content }));
+  assert.equal(list(await get('prompts', space), record).find((p) => p.id === 'assistant')?.source, 'builtin');
+  assert.equal((await call('moc', { plan:noAssets, protection:{type:'none'}, configuration:promptSelection })).status,400);
+  await checked(await post({spaceId:space, command:'prompt-save', id:'memory_distillation',content:'Modified memory prompt export marker'}));
   const protectedConfiguration=await call('moc',{
     plan:{ characters:[],conversations:[],memory:[],semantic_graph:[],compatibility:'none' },
     protection:{ type:'passphrase',value:'configuration-only-password' },
@@ -382,6 +398,7 @@ export async function verifyConfiguration({
   for(const module of ['parameters','prompts','memory-lifecycle']) assert.ok(partialTar.includes('momo-web-'+module));
   for(const module of ['models','preferences','mo-state','runtime','personal-spaces']) assert.ok(!partialTar.includes('momo-web-'+module));
   assert.ok(partialTar.includes('Memory after'));
+  assert.ok(partialTar.includes('Modified memory prompt export marker'));
   assert.ok(!partialTar.includes(other));
   let partialManifest='';
   for(let offset=0;offset+512<=partialBytes.length;){

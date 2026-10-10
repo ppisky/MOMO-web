@@ -461,7 +461,14 @@ export function ModelParameters() {
             checked={settings.stream}
             onChange={(e) => settings.setSettings({ stream: e.currentTarget.checked })}
           />
-          <RequestParameterJson key={current.id} group={current} onChange={(value) => patch(value)} onError={setJsonError} />
+          <RequestParameterJson
+            key={current.id}
+            group={current}
+            stream={settings.stream}
+            onStreamChange={(stream) => settings.setSettings({ stream })}
+            onChange={(value) => patch(value)}
+            onError={setJsonError}
+          />
           <Title order={6}>功能模型</Title>
           <Text size="sm" c="dimmed">
             未单独指定时，使用当前对话的模型和参数。向量化模型不参与生成。

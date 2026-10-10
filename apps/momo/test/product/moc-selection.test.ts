@@ -64,7 +64,15 @@ test('configuration quick choice includes existing components and keeps global-o
   assert.equal(selectionState(selected, 'configuration', [space]), 'partial')
   const globalOnly = changeQuickRange(selected, [space], [])
   assert.equal(globalOnly.configuration.global.length, 3)
-  assert.equal(globalOnly.configuration.prompts.length, 6)
+  assert.equal(globalOnly.configuration.prompts.length, 0)
   assert.deepEqual(globalOnly.configuration.personal_spaces, [])
   assert.equal(selectionState(globalOnly, 'configuration', []), 'all')
+})
+
+test('quick configuration includes only eligible prompt overrides and detail exclusions remain partial', () => {
+  const selected = chooseGroup(emptyExportSelection(), 'configuration', true, ['a'], ['assistant', 'memory_distillation'])
+  assert.deepEqual(selected.configuration.prompts, ['assistant', 'memory_distillation'])
+  assert.equal(selectionState(selected, 'configuration', ['a'], ['assistant', 'memory_distillation']), 'all')
+  selected.configuration.prompts = ['assistant']
+  assert.equal(selectionState(selected, 'configuration', ['a'], ['assistant', 'memory_distillation']), 'partial')
 })

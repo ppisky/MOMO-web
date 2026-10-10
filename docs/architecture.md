@@ -30,6 +30,10 @@ MO State 复用 runtime-settings 稀疏 PATCH、契约 CAS 和运行状态。MOC
 
 MOC 的快速分组只在 Web 选择层将范围映射到既有导出计划，细选与快速开关共用同一份选择，不新增后端导出协议。全局配置和空间配置仍按各自的实际归属导出。
 
+提示词资源契约独立位于 contracts/prompts.ts，资源管理和 MOC 导出共用来源校验。导出只接受 Core 标记的 override 正文；服务端重新核对，builtin 不生成提示词模块，不在 Web 复制 Core 的内置值。
+
+stream 是浏览器输出偏好，也是本次 Core 请求的显式控制字段；参数 JSON 显示和修改同一偏好，供应商扩展参数仍禁止带入 stream。宿主首次请求快照冻结该布尔值。关闭流式时 Core 返回完整 JSON，宿主适配为一个完成事件供页面沿用终态投影；开启时转发真实增量 SSE。旧快照未记录该字段时沿用当时固定开启的行为。
+
 ## 构建约束
 
 现有 Vite 7、React 18、pnpm 10 保持不变。实际浏览器模块图禁止 .server.ts、Node 内建模块和 Electron；生产宿主单独构建，不把 Core 地址、配置目录或密钥注入客户端环境。check:web 继续检查无 Electron 依赖、原生桥和启动脚本。

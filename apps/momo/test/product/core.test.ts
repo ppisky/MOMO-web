@@ -51,6 +51,15 @@ test('a shared personal/conversation Space is emitted once with total weight 100
   const body = JSON.parse(String(calls.at(-1)?.init?.body)); assert.equal(body.momo.memory_sources.length, 1); assert.equal(body.momo.memory_sources[0].weight, 100);
 });
 
+test('the frozen stream flag is explicit at the Core wire boundary, separate from provider parameters', async () => {
+  await new CoreClient(config, transport).respond(conv, '完整回复', requestId, new AbortController().signal, {
+    id: requestId, name: 'Default', temperature: null, topP: null, maxOutput: null, stream: false,
+  });
+  const body = JSON.parse(String(calls.at(-1)?.init?.body));
+  assert.equal(body.stream, false);
+  assert.ok(!body.parameters || !('stream' in body.parameters));
+});
+
 test('scope violations and nonexistent conversations stop before generation', async () => {
   for (const payload of [[{ ...convDTO, space_id: personal }], []]) {
     let generated = false;

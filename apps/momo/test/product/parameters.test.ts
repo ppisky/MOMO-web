@@ -3,10 +3,19 @@ import { test } from 'node:test';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { parameters, requestParameters, groupFromJson, parameterJson } from '../../src/product/contracts/parameters';
+import { parameters, requestParameters, groupFromJson, parameterJson, requestParameterJson, requestFromJson } from '../../src/product/contracts/parameters';
 import { readParameters, saveParameters, parametersForRequest } from '../../src/product/lib/server/parameters.server';
 const id = '01900000-0000-7000-8000-000000000001';
 const group = { id, name: '默认', temperature: null, topP: null, maxOutput: null };
+test('request JSON exposes boolean stream without leaking it into group or provider extras', () => {
+  assert.deepEqual(requestParameterJson(group, true), { stream: true });
+  const edited = requestFromJson(group, true, { stream: false, temperature: 0.4, frequency_penalty: 0.2 });
+  assert.equal(edited.stream, false);
+  assert.deepEqual(requestParameterJson(edited.group, edited.stream), { frequency_penalty: 0.2, temperature: 0.4, stream: false });
+  assert.deepEqual(requestParameters(edited.group), { temperature: 0.4, parameters: { frequency_penalty: 0.2 } });
+  assert.equal(requestFromJson(group, false, {}).stream, false);
+  for (const value of [null, 0, 'false']) assert.throws(() => requestFromJson(group, true, { stream: value }));
+});
 test('JSON edits share form fields, reject protocol control and preserve extra parameters across snapshots', () => {
   const updated = groupFromJson(group, { temperature: 0.4, top_p: 0.8, frequency_penalty: 0.2 });
   assert.equal(updated.temperature, 0.4);
@@ -96,4 +105,12 @@ test('model edits affect new requests; retries and maintenance routes retain the
     }),
   );
   assert.equal(readParameters().revision, selected.revision);
+});
+
+test('stream changes apply only to new requests; retries retain their delivery mode', () => {
+  process.env.MOMO_APP_DATA_DIR = mkdtempSync(join(tmpdir(), 'momo-stream-snapshot-'));
+  const request = crypto.randomUUID(), space = crypto.randomUUID(), conversation = crypto.randomUUID();
+  assert.equal(parametersForRequest(request, space, conversation, 'hello', undefined, false).stream, false);
+  assert.equal(parametersForRequest(request, space, conversation, 'hello', undefined, true).stream, false);
+  assert.equal(parametersForRequest(crypto.randomUUID(), space, conversation, 'next', undefined, true).stream, true);
 });

@@ -1,7 +1,6 @@
 import {
   configurationCount,
   globalConfigNames,
-  promptChoices,
   spaceConfigNames,
   type ConfigurationSelection,
   type GlobalConfig,
@@ -20,7 +19,6 @@ export type ExportSelection = {
 }
 
 const globals = Object.keys(globalConfigNames) as GlobalConfig[]
-const prompts = Object.keys(promptChoices)
 const configs = Object.keys(spaceConfigNames) as SpaceConfig[]
 const same = (a: string[], b: string[]) => a.length === b.length && a.every((id) => b.includes(id))
 
@@ -34,7 +32,12 @@ export function emptyExportSelection(): ExportSelection {
   }
 }
 
-export function selectionState(selection: ExportSelection, group: ExportGroup, range: string[]): SelectionState {
+export function selectionState(
+  selection: ExportSelection,
+  group: ExportGroup,
+  range: string[],
+  prompts: string[] = []
+): SelectionState {
   const { characterSpaces, allRoles, scopes, configuration } = selection
   if (group === 'characters')
     return !characterSpaces.length ? 'none' : allRoles && same(characterSpaces, range) ? 'all' : 'partial'
@@ -58,7 +61,8 @@ export function chooseGroup(
   selection: ExportSelection,
   group: ExportGroup,
   enabled: boolean,
-  range: string[]
+  range: string[],
+  prompts: string[] = []
 ): ExportSelection {
   const spaces = enabled ? [...range] : []
   if (group === 'characters') return { ...selection, characterSpaces: spaces, allRoles: true, selectedRoles: [] }

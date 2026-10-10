@@ -2,6 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from '../lib/server/handl
 import { character, characterFields, list, record, text, uuid } from '../contracts/core';
 import { actionError, actionInput, core } from '../lib/server/actions.server';
 import { CoreError } from '../lib/server/core.server';
+import { promptSpaces } from '../contracts/prompts';
 
 const prompts = [
   'assistant',
@@ -34,16 +35,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         );
       case 'prompts':
         return Response.json(
-          list(await (await client.request('/v1/prompt-spaces')).json(), (value) => {
-            const p = record(value);
-            if (!prompts.includes(text(p.id, 'id'))) throw Error('Unknown prompt space');
-            return {
-              id: text(p.id, 'id'),
-              content: text(p.content, 'content'),
-              source: text(p.source, 'source'),
-              revision: text(p.revision, 'revision'),
-            };
-          })
+          promptSpaces(await (await client.request('/v1/prompt-spaces')).json())
         );
       case 'runtime':
         return Response.json(

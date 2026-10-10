@@ -1,8 +1,9 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { record, list, text } from '../../contracts/core'
+import { record, text } from '../../contracts/core'
 import { models } from '../../contracts/models'
 import { portablePreferences, type ConfigurationSelection, type SpaceConfig } from '../../contracts/moc'
+import { promptSpaces } from '../../contracts/prompts'
 import { core } from './actions.server'
 import { readParameters } from './parameters.server'
 import { spacesHost } from './spaces.server'
@@ -42,20 +43,10 @@ export async function exportConfiguration(directory: string, selection: Configur
     })
   }
   if (selection.prompts.length) {
-    const entries = list(await (await core().request('/v1/prompt-spaces')).json(), (v) => {
-      const p = record(v)
-      return {
-        id: text(p.id, 'id'),
-        content: text(p.content, 'content'),
-        source: text(p.source, 'source'),
-        revision: text(p.revision, 'revision'),
-      }
-    })
+    const entries = promptSpaces(await (await core().request('/v1/prompt-spaces')).json())
     if (selection.prompts.some((id) => !entries.some((p) => p.id === id))) throw Error('提示词空间不可用')
-    await snapshot(
-      'momo-web-prompts',
-      entries.filter((p) => selection.prompts.includes(p.id))
-    )
+    const overrides = entries.filter((p) => p.source === 'override' && selection.prompts.includes(p.id))
+    if (overrides.length) await snapshot('momo-web-prompts', overrides)
   }
   const settings = new Map<string, Record<string, unknown>>()
   for (const space of new Set(

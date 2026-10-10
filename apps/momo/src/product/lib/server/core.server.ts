@@ -265,7 +265,7 @@ export class CoreClient {
         body: JSON.stringify({
           model: parameters?.modelReference ?? 'conversation',
           input,
-          stream: true,
+          stream: parameters?.stream ?? true,
           ...(parameters ? requestParameters(parameters) : {}),
           momo: {
             schema: 'momo.responses/1.0',

@@ -21,6 +21,7 @@ export type Parameters = {
   purposes?: Partial<Record<ModelPurpose, string | null>>
 }
 export type ResolvedParameters = ParameterGroup & {
+  stream?: boolean
   modelReference?: string
   modelRoutes?: Record<
     string,
@@ -102,6 +103,10 @@ export function resolvedParameters(input: unknown): ResolvedParameters {
     return value
   }
   const result: ResolvedParameters = { ...group }
+  if (raw.stream !== undefined) {
+    if (typeof raw.stream !== 'boolean') throw Error('stream 必须为 true 或 false')
+    result.stream = raw.stream
+  }
   if (raw.modelReference !== undefined) result.modelReference = reference(raw.modelReference)
   if (raw.modelRoutes !== undefined) {
     const routes = record(raw.modelRoutes)
@@ -208,4 +213,13 @@ export function groupFromJson(group: ParameterGroup, input: unknown): ParameterG
       },
     ],
   }).groups[0]!
+}
+
+export function requestParameterJson(group: ParameterGroup, stream: boolean) {
+  return { ...parameterJson(group), stream }
+}
+export function requestFromJson(group: ParameterGroup, currentStream: boolean, input: unknown) {
+  const { stream = currentStream, ...values } = record(input)
+  if (typeof stream !== 'boolean') throw Error('stream 必须为 true 或 false')
+  return { group: groupFromJson(group, values), stream }
 }

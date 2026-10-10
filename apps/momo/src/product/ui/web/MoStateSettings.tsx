@@ -99,6 +99,7 @@ export function MoStateSettings() {
         <>
           <Select
             label="状态配置档"
+            description={fields.profile === 'v1_projection' ? '将记忆、语义网与场景/人物信号投影为状态上下文；V1 是 Core 的投影版本，不启用闭环维护与持久快照管理。' : '恢复到期维护，记录状态事件与版本并保存快照，再将状态用于对话；不会保证模型回复始终逻辑自洽。'}
             data={[
               { value: 'closed_autonomous', label: '闭环自治' },
               { value: 'v1_projection', label: 'V1 状态投影' },

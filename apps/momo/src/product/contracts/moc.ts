@@ -1,12 +1,5 @@
 import { record, uuid, list } from './core'
-export const promptChoices = {
-  assistant: '通用助手提示词',
-  vision_fallback: '视觉回退提示词',
-  roleplay_director: '角色导演提示词',
-  memory_distillation: '记忆提取提示词',
-  semantic_graph_governance: '语义网维护提示词',
-  ddm_profile_generation: 'DDM 角色侧写提示词',
-} as const
+import { promptChoices } from './prompts'
 export const spaceConfigNames = {
   history_window: '上下文管理',
   request_overrides: '请求参数策略',

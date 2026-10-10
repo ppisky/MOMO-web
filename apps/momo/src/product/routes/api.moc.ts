@@ -55,6 +55,11 @@ export async function action({ request }: ActionFunctionArgs) {
       throw new CoreError(400, 'invalid_passphrase')
     directory = await mkdtemp(join(tmpdir(), 'momo-web-export-'))
     const hostModules = await exportConfiguration(directory, configuration, input.preferences)
+    if (
+      !hostModules.length &&
+      ![plan.characters, plan.conversations, plan.memory, plan.semantic_graph].some((v) => v.length)
+    )
+      throw new CoreError(400, 'empty_export')
     const path = join(directory, 'export.moc')
     await core().request(
       '/v1/moc/export',
