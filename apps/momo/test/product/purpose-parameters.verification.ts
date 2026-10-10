@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict'
 import { zstdDecompressSync } from 'node:zlib'
-import { models } from '../../src/product/contracts/models'
 import { record } from '../../src/product/contracts/core'
+import { models } from '../../src/product/contracts/models'
 import { purposeConfigurations } from '../../src/product/contracts/purpose-parameters'
-import { readParameters } from '../../src/product/lib/server/parameters.server'
-import { resolveParameters } from '../../src/product/lib/server/resolve-parameters.server'
 import { emptyExportSelection } from '../../src/product/features/moc/selection'
 import type { CoreClient } from '../../src/product/lib/server/core.server'
+import { readParameters } from '../../src/product/lib/server/parameters.server'
+import { resolveParameters } from '../../src/product/lib/server/resolve-parameters.server'
 
 export async function verifyPurposeParameters({ call, client, space, conversation, requests }: {
   call: (path: string, input: unknown) => Promise<Response>; client: CoreClient; space: string; conversation: string
@@ -29,8 +29,9 @@ export async function verifyPurposeParameters({ call, client, space, conversatio
   const initial = readParameters()
   const custom = await checked(await call('parameters', { ...initial, spaceId: space,
     purposeParameters: { vision: { temperature: 0.25, max_output_tokens: 128 }, memory_distillation: { temperature: 0.5, max_output_tokens: 400 }, semantic_graph_governance: { temperature: 0.75, max_output_tokens: 500 } },
-    embedding: { modelId: embedding.id, dimension: 3, parameters: { normalization: 'l2', send_dimensions: true, query_prefix: 'query: ', document_prefix: 'doc: ' } } }))
-  assert.deepEqual(custom.embedding.parameters, { send_dimensions: true, query_prefix: 'query: ', document_prefix: 'doc: ' })
+    embedding: { modelId: embedding.id, dimension: 3, parameters: { encoding_format: 'float', dimensions: 3 } } }))
+  assert.equal(custom.embedding.dimension, 3)
+  assert.equal(custom.embedding.parameters, undefined)
   assert.deepEqual(custom.groups, initial.groups)
   const native = async (image = false, maintain = false) => {
     const resolved = resolveParameters(readParameters(), catalog)
@@ -63,8 +64,11 @@ export async function verifyPurposeParameters({ call, client, space, conversatio
   const chat = await call('chat', { spaceId: space, conversationId: conversation, requestId: chatId, input: 'purpose embedding fixture', stream: true })
   assert.ok((await chat.text()).includes('response.completed'))
   const embeds = requests.slice(embedStart).filter((r) => r.path === '/v1/embeddings')
-  assert.ok(embeds.some((r) => (r.body.input as string[]).every((v) => v.startsWith('doc: '))))
-  assert.ok(embeds.some((r) => (r.body.input as string[]).every((v) => v.startsWith('query: '))))
+  assert.ok(embeds.length > 0)
+  for (const request of embeds) {
+    assert.equal(request.body.encoding_format, 'float')
+    for (const key of ['normalization', 'send_dimensions', 'query_prefix', 'document_prefix']) assert.equal(key in request.body, false)
+  }
   for (const request of embeds) assert.equal(request.body.dimensions, 3)
   await drain()
   const empty = emptyExportSelection()

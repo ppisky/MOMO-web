@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { models } from '../../src/product/contracts/models'
-import { readParameters } from '../../src/product/lib/server/parameters.server'
 import { record } from '../../src/product/contracts/core'
+import { models } from '../../src/product/contracts/models'
 import type { CoreClient } from '../../src/product/lib/server/core.server'
+import { readParameters } from '../../src/product/lib/server/parameters.server'
 
 export async function verifyEmbeddings({ call, client, space, conversation, requests }: {
   call: (path: string, input: unknown) => Promise<Response>
@@ -43,9 +43,10 @@ export async function verifyEmbeddings({ call, client, space, conversation, requ
   for (const request of embeds()) {
     assert.equal(request.authorization, 'Bearer fixture-private-key')
     assert.equal(request.body.model, 'fixture-embedding')
-    for (const key of ['temperature', 'top_p', 'max_tokens', 'frequency_penalty', 'stream', 'dimensions']) assert.equal(key in request.body, false)
+    assert.equal(request.body.dimensions, 3)
+    for (const key of ['temperature', 'top_p', 'max_tokens', 'frequency_penalty', 'stream']) assert.equal(key in request.body, false)
   }
-  const profile = { provider_id: provider.id, endpoint_id: provider.id, model: 'fixture-embedding', dimension: 3, normalization: 'l2', send_dimensions: false }
+  const profile = { provider_id: provider.id, endpoint_id: provider.id, model: 'fixture-embedding', dimension: 3, normalization: 'l2', send_dimensions: true }
   const vectorId = `momo-embedding-v1:${createHash('sha256').update(JSON.stringify(profile)).digest('hex')}`
   const status = async () => (await client.request(`/v1/semantic-graph/vector-status?space_id=${space}&vector_space_id=${vectorId}`)).json()
   const indexed = record(await status())
@@ -59,6 +60,21 @@ export async function verifyEmbeddings({ call, client, space, conversation, requ
   assert.ok(events.includes('embedding index degraded') && events.includes('embedding degraded'), events)
   assert.deepEqual(await status(), indexed, 'dimension mismatch must retain the prior valid index')
   assert.deepEqual(await sources(), before, 'index updates never mutate NSG sources')
+  assert.equal((await call('parameters', { ...readParameters(), embedding: { modelId: embeddingId, dimension: null } })).status, 200)
+  const nativeStart = embeds().length
+  events = await chat()
+  assert.ok(!events.includes('embedding degraded') && !events.includes('embedding index degraded'), events)
+  assert.ok(embeds().length > nativeStart)
+  for (const request of embeds().slice(nativeStart)) assert.equal('dimensions' in request.body, false, 'native default must omit dimensions')
+  const nativeProfile = { ...profile, send_dimensions: false }
+  const nativeId = `momo-embedding-v1:${createHash('sha256').update(JSON.stringify(nativeProfile)).digest('hex')}`
+  const nativeStatus = record(await (await client.request(`/v1/semantic-graph/vector-status?space_id=${space}&vector_space_id=${nativeId}`)).json())
+  assert.equal(nativeStatus.dimension, 3)
+  assert.equal(nativeStatus.indexed_count, 2)
+  const reusedStart = embeds().length
+  await chat()
+  assert.deepEqual(embeds().slice(reusedStart).map((r) => (r.body.input as string[]).length), [1, 1], 'one native-dimension discovery plus one query, other documents reused')
+  assert.deepEqual(await sources(), before)
   const count = embeds().length
   assert.equal((await call('parameters', { ...readParameters(), embedding: null })).status, 200)
   await chat()

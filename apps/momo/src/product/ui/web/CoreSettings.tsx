@@ -14,7 +14,7 @@ import {
 } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { record, list, text } from '../../contracts/core';
-import { parameters, purposeNames, modelsForPurpose, type ModelPurpose, type Parameters } from '../../contracts/parameters';
+import { parameters, purposeNames, modelsForPurpose, embeddingFromJson, embeddingParameterJson, type ModelPurpose, type Parameters } from '../../contracts/parameters';
 import { models, type Models } from '../../contracts/models';
 import { parameterPolicy, enableParameterPolicy } from '../../contracts/parameter-policy';
 import { useProduct } from './context';
@@ -556,10 +556,11 @@ export function ModelParameters() {
               {config.embedding && (
                 <NumberInput
                   label="向量维数"
-                  description="填写该模型的实际输出维数，Core 用于校验和区分索引；不修改模型的输出维数。"
+                  description="留空跟随模型默认；填写后通过 dimensions 请求指定维数，需要模型支持。"
                   min={1}
                   max={8192}
                   allowDecimal={false}
+                  placeholder="跟随模型默认"
                   value={config.embedding.dimension ?? ''}
                   onChange={(value) => {
                     if (config.embedding)
@@ -573,10 +574,10 @@ export function ModelParameters() {
               <PurposeRequestJson key={`embedding-${config.embedding?.modelId}-${data.spaceId}`}
                 purpose="embedding" label="语义网向量化" spaceId={data.spaceId}
                 modelId={config.embedding?.modelId ?? null} dimension={config.embedding?.dimension}
-                value={config.embedding?.parameters}
+                value={config.embedding ? embeddingParameterJson(config.embedding) : undefined}
                 onChange={(value) => {
-                  if (config.embedding) { const { parameters: _old, ...selection } = config.embedding;
-                    setConfig({ ...config, embedding: { ...selection, ...(Object.keys(value).length ? { parameters: value } : {}) } });
+                  if (config.embedding) {
+                    setConfig({ ...config, embedding: embeddingFromJson(config.embedding, value) });
                   }
                 }}
                 onError={(message) => setPurposeErrors((previous) => previous.embedding === message ? previous : { ...previous, embedding: message })}

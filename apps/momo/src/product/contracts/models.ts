@@ -1,9 +1,8 @@
 import { record, text, uuid } from './core';
 export const protocols = [
-  { value: 'openai', label: 'OpenAI Chat Completions' },
+  { value: 'openai', label: 'OpenAI 兼容（默认 Chat Completions）' },
   { value: 'openai_responses', label: 'OpenAI Responses' },
   { value: 'anthropic', label: 'Anthropic Messages' },
-  { value: 'gemini', label: 'Google Gemini' },
 ] as const;
 export const modelKinds = [
   { value: 'chat', label: '文本' },

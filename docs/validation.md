@@ -190,3 +190,17 @@
 - Core 完整角色字段、真实开场白、独立记忆/NSG、空间和模型参数组尚未在原网页落实；快捷键及最大输出零值说明等旧行为仍待按已确认规则调整。
 - 没有测试付费/外部模型、所有附件格式、所有设备和浏览器，也没有重做完整产品验收。
 - App、Core、ron 代码本轮未修改；App 只同步暂停和返回原仓库的文档。
+
+
+## 2026-10-11：OpenAI 连接与默认向量维数
+
+依据 0013 实施；Web 修改基线 c33dcb0，Core 独立工作树基线 d3d598e，新 Core revision db55de27a40ab537ec56cd4e1ab32a507666a028。原 Core 脏工作区、MOMO-app、ron 保持不变。
+
+- Core：Rust 1.99.0，223 项 Core / 30 项 server 单元测试、all-target 严格 Clippy、fmt、locked server 构建通过。首次并行编译耗尽内存，改为 `-j 1` 后完整通过，不更换工具链或降低验证范围。
+- Web：46 项产品测试、严格类型检查、无 Electron 边界、正式及独立演示生产构建通过。受影响代码 Biome 无错误，既有非空断言/依赖警告保留；未为此重排全页代码。构建仍有既有体积/Tailwind 警告。
+- 真实 HTTP/SSE：Core 单测实际发送兼容模式 Responses 路径、完整 Responses URL 和显式 Responses；响应/流终态、输入字符串与最大输出字段转换通过，原 Chat 和 Anthropic 回归通过。Google 原生协议反序列化明确拒绝，不影响通用端点提供的模型。
+- Web → 隔离 Core → 离线模型：`test:product:resources` 完整通过。默认不发 dimensions，确认返回 3 维后建立可检索索引；重复请求只重新确认一个文档并复用其余未变向量。手填发送 dimensions；错误维数不提交索引、不修改 NSG 来源。独立用途、MOC 差量、恢复、快照重放与取消回归通过。首次联调误读尚未替换的旧构建，待新构建完成后重跑通过。
+- 浏览器 1213：默认维数空白且可打开请求 JSON；默认仅 encoding_format=float。手填 1024 进入 JSON，JSON 改 512 更新表单；dimensions=0 显示错误并禁用保存。有效配置保存/刷新保留；恢复默认后维数空白、JSON 不含 dimensions、模型保持。控制台没有 error/warn；演示恢复默认后保留打开入口供用户检查。
+- 日常 Core 18876 和正式 Web 1212 已更新启动；演示 1213 正常。停机后备份既有 Core/宿主目录，重启后 58 个资产/配置文件哈希无变化。健康检查和两个网页均通过。
+
+截图为忽略文件 `.cache/model-parameters-native-dimensions-20261011.png`。未调用真实/付费服务商；不表示所有兼容服务或维护质量通过。固定后台 token 预算与任务拆分/证据覆盖仍是独立待完善项，不因本次维数与协议验证而宣称解决。未进行 ron 桌面验收。

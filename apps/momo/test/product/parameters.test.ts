@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { parameters, modelsForPurpose, requestParameters, groupFromJson, parameterJson, requestParameterJson, requestFromJson } from '../../src/product/contracts/parameters';
+import { test } from 'node:test';
+import { groupFromJson, modelsForPurpose, parameterJson, parameters, requestFromJson, requestParameterJson, requestParameters } from '../../src/product/contracts/parameters';
+import { parametersForRequest, readParameters, saveParameters } from '../../src/product/lib/server/parameters.server';
 import { resolveParameters, validatePurposeModels } from '../../src/product/lib/server/resolve-parameters.server';
-import { readParameters, saveParameters, parametersForRequest } from '../../src/product/lib/server/parameters.server';
+
 const id = '01900000-0000-7000-8000-000000000001';
 const group = { id, name: '默认', temperature: null, topP: null, maxOutput: null };
 
@@ -30,7 +31,7 @@ test('purpose selections are type-filtered models, independent of dialogue group
   assert.throws(() => validatePurposeModels({ ...config, purposes: { vision: chat!.id } }, catalog));
   assert.throws(() => validatePurposeModels({ ...config, purposes: { memory_distillation: embedding!.id } }, catalog));
   assert.throws(() => validatePurposeModels({ ...config, embedding: { modelId: chat!.id, dimension: 3 } }, catalog));
-  for (const dimension of [0, null, 8193, 1.5]) assert.throws(() => parameters({ ...config, embedding: { modelId: embedding!.id, dimension } }));
+  for (const dimension of [0, 8193, 1.5]) assert.throws(() => parameters({ ...config, embedding: { modelId: embedding!.id, dimension } }));
   assert.equal(resolveParameters({ ...config, purposes: {}, embedding: null }, catalog).modelRoutes?.vision, undefined);
   assert.deepEqual(resolveParameters({ ...config, purposes: {}, embedding: null }, catalog).embedding, { model: null, dimension: null });
   const legacy = parameters({ ...config, purposes: { memory_distillation: id } });

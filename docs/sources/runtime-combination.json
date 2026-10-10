@@ -1,13 +1,13 @@
 {
-  "webBaseline": "25147eb99d01d08566f3b4a5477b47e14a034454",
-  "coreRevision": "d3d598e63ab452dc112e5f06ac60a2f701bb8f28",
+  "webBaseline": "c33dcb0e7457d604ddaadc5cdd955a02b498a631",
+  "coreRevision": "db55de27a40ab537ec56cd4e1ab32a507666a028",
   "coreSource": "MOMO-core independent repository, codex/space-lifecycle worktree",
-  "previousCoreRevision": "e83c2d1d2c03bea9e330f15b136b6fe64ae575dd",
+  "previousCoreRevision": "d3d598e63ab452dc112e5f06ac60a2f701bb8f28",
   "rust": "1.99.0",
   "pnpm": "10.33.0",
   "node": "26.11.1",
-  "verified": "2026-10-10",
-  "scope": "Core-owned purpose request defaults and native resolution API; explicit inline independent overrides, embedding profile configuration, delta-only MOC export, captured replay/maintenance and reset; preserved existing assets and web services",
+  "verified": "2026-10-11",
+  "scope": "OpenAI-compatible Chat default and direct Responses HTTP/SSE; removed native Google protocol; native embedding dimension discovery, shared dimensions form/JSON, compatible indexing/query and failed-batch preservation; formal web and isolated offline demo",
   "appChanged": false,
   "ronChanged": false
 }

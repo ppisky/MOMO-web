@@ -45,3 +45,5 @@ stream 是浏览器输出偏好，也是本次 Core 请求的显式控制字段�
 现有 Vite 7、React 18、pnpm 10 保持不变。实际浏览器模块图禁止 .server.ts、Node 内建模块和 Electron；生产宿主单独构建，不把 Core 地址、配置目录或密钥注入客户端环境。check:web 继续检查无 Electron 依赖、原生桥和启动脚本。
 
 0009 增补：模型未声明上下文长度和功能路由额外参数修在 Core；Web 参数 JSON 与表单、请求重放共用一份参数组。记忆生命周期仍存 Core mo_state.memory_lifecycle，页面放在记忆与语义网；MO State 恢复继承不清除此块。通用设置统一管理全部提示词空间，记忆与语义网页不重复编辑器。MOC 配置使用既有 HostMocModule，Web 从白名单资源生成扩展快照，不给 Core 增加 Web 设置数据库依赖。配置导出路径及临时文件仅由服务端管理。
+
+2026-10-11 模型连接与维数按 [0013](decisions/0013-openai-requests-and-embedding-dimensions.md) 修订：兼容连接默认 Chat，明确 Responses 路径或独立 Responses 均由 Core 使用对应适配；原生 Google 协议移除。向量维数可不声明，手填才发送 dimensions，实际返回维数与 profile 标识由 Core 校验。网页与演示只编辑请求参数，不复制向量处理、生成或索引引擎。

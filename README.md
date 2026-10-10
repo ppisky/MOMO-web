@@ -7,7 +7,7 @@
 使用 pnpm 10.33.0。应用脚本使用 pnpm 提供的 Node 26.11.1，根目录启动器支持系统 Node 22.20+。
 
 1. 根目录执行 pnpm install、pnpm setup。
-2. 单独启动兼容的 MOMO-core；已验证 revision 为 c44f5ffee737f5915f9baae20b49a33717eaced1。
+2. 单独启动兼容的 MOMO-core；已验证 revision 为 db55de27a40ab537ec56cd4e1ab32a507666a028。
 3. 复制 apps/momo/.env.example 为 .env.local，填写 MOMO_CORE_ORIGIN（仅 loopback）。已有配置必须让 MOMO_APP_DATA_DIR 指向原 host-config.sqlite3 所在目录，保留 Space ID、参数组和当前空间；不搬动或重新初始化 Core 数据。
 4. 根目录执行 pnpm dev，打开 http://127.0.0.1:1212/。
 
@@ -36,3 +36,5 @@ MOC 仅携带已修改的提示词空间，内置正文由 Core 提供；恢复�
 
 - [架构](docs/architecture.md) · [开发和验证](docs/development.md) · [验证记录](docs/validation.md)
 - [来源](UPSTREAM.md) · [GPL-3.0](LICENSE)
+
+2026-10-11：[0013](docs/decisions/0013-openai-requests-and-embedding-dimensions.md) 落实 OpenAI 兼容默认 Chat、直接 Responses 和向量维数默认继承。向量请求 JSON 只显示供应商参数，手填维数与 dimensions 双向同步；不再预填 1536，也不显示内部 profile 字段。演示与正式页面共用组件，Core 负责实际维数、索引与协议适配。

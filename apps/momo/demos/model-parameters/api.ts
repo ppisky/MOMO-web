@@ -18,7 +18,7 @@ const chatId = '10000000-0000-4000-8000-000000000003'
 const visionId = '10000000-0000-4000-8000-000000000004'
 const embeddingId = '10000000-0000-4000-8000-000000000005'
 const groupId = '10000000-0000-4000-8000-000000000006'
-const storageKey = 'momo-model-parameters-demo.v1'
+const storageKey = 'momo-model-parameters-demo.v2'
 const catalog = models({
   revision: 1,
   providers: [
@@ -70,7 +70,7 @@ function initial(): Parameters {
     selectedId: groupId,
     groups: [{ id: groupId, name: '默认参数', modelId: chatId, temperature: null, topP: null, maxOutput: null }],
     purposes: { vision: visionId },
-    embedding: { modelId: embeddingId, dimension: 1536 },
+    embedding: { modelId: embeddingId, dimension: null },
   })
 }
 function read(): Parameters {
@@ -99,10 +99,14 @@ function configuration(input: Record<string, unknown>): PurposeConfiguration {
   if (!model) throw Error('请先选择符合用途的模型。')
   let defaults: Record<string, unknown>, custom: Record<string, unknown>
   if (purpose === 'embedding') {
-    if (!Number.isInteger(input.dimension) || Number(input.dimension) < 1 || Number(input.dimension) > 8192)
+    if (
+      input.dimension != null &&
+      (!Number.isInteger(input.dimension) || Number(input.dimension) < 1 || Number(input.dimension) > 8192)
+    )
       throw Error('请填写 1–8192 的向量维数')
-    defaults = { normalization: 'l2', send_dimensions: false, query_prefix: '', document_prefix: '' }
+    defaults = { encoding_format: 'float' }
     custom = embeddingParameters(input.parameters ?? {})
+    if (input.dimension != null) custom = { ...custom, dimensions: input.dimension }
   } else {
     defaults = { temperature: 0, max_output_tokens: purpose === 'vision' ? 1024 : 4096 }
     custom = purposeParameterJson(input.parameters ?? {})

@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
 import { Alert, Button, Collapse, Flex, Stack, Text, Textarea } from '@mantine/core'
+import { useEffect, useRef, useState } from 'react'
 import { embeddingParameters, purposeParameterJson } from '../../contracts/parameters'
 import {
-  parameterDifference,
-  purposeConfigurations,
   type Purpose,
   type PurposeConfiguration,
+  parameterDifference,
+  purposeConfigurations,
 } from '../../contracts/purpose-parameters'
 import { api } from './api'
 
@@ -44,7 +44,7 @@ export function PurposeRequestJson({
   const configurationRef = useRef(configuration)
   configurationRef.current = configuration
   const source = JSON.stringify(value ?? {}),
-    ready = !!modelId && (purpose !== 'embedding' || !!dimension)
+    ready = !!modelId
   const appliedSource = useRef(''),
     editFailure = useRef(false)
   // biome-ignore lint/correctness/useExhaustiveDependencies: A policy revision explicitly revalidates an unchanged draft.
@@ -146,10 +146,12 @@ export function PurposeRequestJson({
           {configuration && (
             <>
               <Textarea
-                label={purpose === 'embedding' ? '语义网向量化配置 JSON' : `${label.replace(/模型$/, '')}请求参数 JSON`}
+                label={
+                  purpose === 'embedding' ? '语义网向量化请求参数 JSON' : `${label.replace(/模型$/, '')}请求参数 JSON`
+                }
                 description={
                   purpose === 'embedding'
-                    ? '仅调整向量化 profile；send_dimensions 需模型支持。索引和查询使用同一配置，恢复不改变模型与维数。'
+                    ? '省略 dimensions 跟随模型默认；填写后同步向量维数，并要求模型支持。model 和 input 由 Core 填入，归一化与前缀不属于请求参数。'
                     : '未修改的字段使用 Core 推荐值；删除字段恢复继承。额外参数受当前个人空间策略约束，对话请求参数不进入这里。'
                 }
                 value={draft}

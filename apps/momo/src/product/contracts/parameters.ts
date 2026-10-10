@@ -99,9 +99,14 @@ export function parameters(value: unknown): Parameters {
   let embedding: Parameters['embedding']
   if (v.embedding != null) {
     const e = record(v.embedding)
-    embedding = { modelId: uuid(e.modelId), dimension: nullable(e.dimension, 1, 8192, true),
-      ...(e.parameters === undefined ? {} : { parameters: embeddingParameters(e.parameters) }) }
-    if (embedding.dimension === null) throw Error('请填写向量维数')
+    const request = e.parameters === undefined ? {} : embeddingParameters(e.parameters)
+    const dimension = nullable(e.dimension ?? null, 1, 8192, true)
+    if (dimension !== null && request.dimensions !== undefined && dimension !== request.dimensions)
+      throw Error('向量维数与 JSON 中的 dimensions 不一致')
+    embedding = {
+      modelId: uuid(e.modelId),
+      dimension: dimension ?? (request.dimensions === undefined ? null : Number(request.dimensions)),
+    }
   }
   const purposeParameters: Parameters['purposeParameters'] = {}
   if (v.purposeParameters !== undefined) {
@@ -149,10 +154,16 @@ export function resolvedParameters(input: unknown): ResolvedParameters {
     const e = record(raw.embedding)
     if (e.model === null && e.dimension === null) result.embedding = { model: null, dimension: null }
     else {
-      if (!Number.isInteger(e.dimension) || Number(e.dimension) < 1 || Number(e.dimension) > 8192)
+      if (
+        e.dimension != null &&
+        (!Number.isInteger(e.dimension) || Number(e.dimension) < 1 || Number(e.dimension) > 8192)
+      )
         throw Error('无效向量维数')
-      result.embedding = { model: reference(e.model), dimension: Number(e.dimension),
-        ...(e.parameters === undefined ? {} : { parameters: embeddingParameters(e.parameters) }) }
+      result.embedding = {
+        model: reference(e.model),
+        dimension: e.dimension == null ? null : Number(e.dimension),
+        ...(e.parameters === undefined ? {} : { parameters: embeddingParameters(e.parameters) }),
+      }
     }
   }
   if (raw.modelRoutes !== undefined) {
@@ -272,27 +283,48 @@ export function requestFromJson(group: ParameterGroup, currentStream: boolean, i
 }
 
 export function purposeParameterJson(input: unknown): Record<string, unknown> {
-  const group: ParameterGroup = { id: '00000000-0000-4000-8000-000000000011', name: '用途参数', temperature: null, topP: null, maxOutput: null }
+  const group: ParameterGroup = {
+    id: '00000000-0000-4000-8000-000000000011',
+    name: '用途参数',
+    temperature: null,
+    topP: null,
+    maxOutput: null,
+  }
   return parameterJson(groupFromJson(group, input))
 }
 
 export function purposeRouteParameters(input: unknown) {
   const { temperature, top_p, max_output_tokens, ...extra } = purposeParameterJson(input)
-  return { ...(temperature === undefined ? {} : { temperature: Number(temperature) }),
+  return {
+    ...(temperature === undefined ? {} : { temperature: Number(temperature) }),
     ...(top_p === undefined ? {} : { top_p: Number(top_p) }),
     ...(max_output_tokens === undefined ? {} : { max_output_tokens: Number(max_output_tokens) }),
-    ...(Object.keys(extra).length ? { parameters: extra } : {}) }
+    ...(Object.keys(extra).length ? { parameters: extra } : {}),
+  }
 }
 
 export function embeddingParameters(input: unknown): Record<string, unknown> {
   const result: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(record(input))) {
-    if (!['normalization', 'send_dimensions', 'query_prefix', 'document_prefix'].includes(key)) throw Error(`向量化不支持参数 ${key}`)
+    if (!['dimensions', 'encoding_format'].includes(key)) throw Error(`向量化请求不支持参数 ${key}`)
     if (value === null) continue
-    if (key === 'normalization' && (typeof value !== 'string' || !['none', 'l2'].includes(value))) throw Error('normalization 必须为 none 或 l2')
-    if (key === 'send_dimensions' && typeof value !== 'boolean') throw Error('send_dimensions 必须为 true 或 false')
-    if (key.endsWith('_prefix') && (typeof value !== 'string' || new TextEncoder().encode(value).byteLength > 4096)) throw Error('向量化前缀必须为不超过 4096 字节的文本')
+    if (key === 'dimensions' && (typeof value !== 'number' || !Number.isInteger(value) || value < 1 || value > 8192))
+      throw Error('dimensions 必须为 1 至 8192 的正整数')
+    if (key === 'encoding_format' && value !== 'float') throw Error('encoding_format 当前仅支持 float')
     result[key] = value
   }
   return result
+}
+
+/** One editable dimension, shared by the form and the provider-parameter JSON. */
+export function embeddingParameterJson(selection: NonNullable<Parameters['embedding']>) {
+  return { ...selection.parameters, ...(selection.dimension === null ? {} : { dimensions: selection.dimension }) }
+}
+
+export function embeddingFromJson(
+  selection: NonNullable<Parameters['embedding']>,
+  input: unknown
+): NonNullable<Parameters['embedding']> {
+  const { dimensions } = embeddingParameters(input)
+  return { modelId: selection.modelId, dimension: dimensions === undefined ? null : Number(dimensions) }
 }
