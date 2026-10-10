@@ -3,10 +3,54 @@ import { test } from 'node:test';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { parameters, requestParameters, groupFromJson, parameterJson, requestParameterJson, requestFromJson } from '../../src/product/contracts/parameters';
+import { parameters, modelsForPurpose, requestParameters, groupFromJson, parameterJson, requestParameterJson, requestFromJson } from '../../src/product/contracts/parameters';
+import { resolveParameters, validatePurposeModels } from '../../src/product/lib/server/resolve-parameters.server';
 import { readParameters, saveParameters, parametersForRequest } from '../../src/product/lib/server/parameters.server';
 const id = '01900000-0000-7000-8000-000000000001';
 const group = { id, name: '默认', temperature: null, topP: null, maxOutput: null };
+
+test('purpose selections are type-filtered models, independent of dialogue groups and request JSON', () => {
+  const providerId = crypto.randomUUID();
+  const provider = { id: providerId, name: 'Fixture', protocol: 'openai' as const, base_url: 'http://127.0.0.1:9/v1', api_path: '', has_api_key: false };
+  const catalog = { revision: 1, providers: [provider], models: (['chat', 'vision', 'embedding'] as const).map((kind, index) => ({
+    id: crypto.randomUUID(), provider_id: providerId, model_id: kind, name: kind, kind,
+    context_window: null, max_output_tokens: null, reference: `configured_${String(index).repeat(64)}`,
+  })) };
+  const [chat, vision, embedding] = catalog.models;
+  assert.deepEqual(modelsForPurpose(catalog, 'vision'), [vision]);
+  assert.deepEqual(modelsForPurpose(catalog, 'embedding'), [embedding]);
+  assert.deepEqual(modelsForPurpose(catalog, 'semantic_graph_governance'), [chat, vision]);
+  const config = parameters({ revision: 0, selectedId: id, groups: [{ ...group, modelId: chat!.id, temperature: 0.6, topP: 0.8, maxOutput: 100, parameters: { frequency_penalty: 0.4 } }], purposes: { vision: vision!.id }, embedding: { modelId: embedding!.id, dimension: 3 } });
+  const resolved = resolveParameters(config, catalog);
+  assert.deepEqual(resolved.modelRoutes?.vision, { model: vision!.reference });
+  assert.deepEqual(resolved.modelRoutes?.memory_distillation, { model: chat!.reference });
+  assert.deepEqual(resolved.modelRoutes?.semantic_graph_governance, { model: chat!.reference });
+  assert.deepEqual(resolved.embedding, { model: embedding!.reference, dimension: 3 });
+  assert.equal(resolved.parameters?.frequency_penalty, 0.4);
+  assert.throws(() => validatePurposeModels({ ...config, purposes: { vision: chat!.id } }, catalog));
+  assert.throws(() => validatePurposeModels({ ...config, purposes: { memory_distillation: embedding!.id } }, catalog));
+  assert.throws(() => validatePurposeModels({ ...config, embedding: { modelId: chat!.id, dimension: 3 } }, catalog));
+  for (const dimension of [0, null, 8193, 1.5]) assert.throws(() => parameters({ ...config, embedding: { modelId: embedding!.id, dimension } }));
+  assert.equal(resolveParameters({ ...config, purposes: {}, embedding: null }, catalog).modelRoutes?.vision, undefined);
+  assert.deepEqual(resolveParameters({ ...config, purposes: {}, embedding: null }, catalog).embedding, { model: null, dimension: null });
+  const legacy = parameters({ ...config, purposes: { memory_distillation: id } });
+  assert.equal(legacy.purposes?.memory_distillation, chat!.id);
+});
+
+test('embedding reference and dimension freeze for retries while later requests use the new configuration', () => {
+  process.env.MOMO_APP_DATA_DIR = mkdtempSync(join(tmpdir(), 'momo-embedding-snapshot-'));
+  const initial = readParameters(), providerId = crypto.randomUUID(), chatId = crypto.randomUUID(), embedId = crypto.randomUUID();
+  const catalog = { revision: 1, providers: [{ id: providerId, name: 'Fixture', protocol: 'openai' as const, base_url: 'http://127.0.0.1:9/v1', api_path: '', has_api_key: false }], models: [
+    { id: chatId, provider_id: providerId, model_id: 'chat', name: 'Chat', kind: 'chat' as const, context_window: null, max_output_tokens: null, reference: `configured_${'a'.repeat(64)}` },
+    { id: embedId, provider_id: providerId, model_id: 'embed', name: 'Embed', kind: 'embedding' as const, context_window: null, max_output_tokens: null, reference: `configured_${'b'.repeat(64)}` },
+  ] };
+  const config = saveParameters({ ...initial, groups: initial.groups.map((g) => ({ ...g, modelId: chatId })), embedding: { modelId: embedId, dimension: 3 } });
+  const request = crypto.randomUUID(), space = crypto.randomUUID(), conversation = crypto.randomUUID();
+  const frozen = parametersForRequest(request, space, conversation, 'one', catalog);
+  saveParameters({ ...config, embedding: { modelId: embedId, dimension: 4 } });
+  assert.deepEqual(parametersForRequest(request, space, conversation, 'one', catalog), frozen);
+  assert.equal(parametersForRequest(crypto.randomUUID(), space, conversation, 'two', catalog).embedding?.dimension, 4);
+});
 test('request JSON exposes boolean stream without leaking it into group or provider extras', () => {
   assert.deepEqual(requestParameterJson(group, true), { stream: true });
   const edited = requestFromJson(group, true, { stream: false, temperature: 0.4, frequency_penalty: 0.2 });

@@ -18,6 +18,7 @@ import { action as chatAction } from '../../src/product/routes/api.chat';
 import { readParameters } from '../../src/product/lib/server/parameters.server';
 import { models as parseModels } from '../../src/product/contracts/models';
 import { parameterPolicy, enableParameterPolicy } from '../../src/product/contracts/parameter-policy';
+import { verifyEmbeddings } from './embeddings.verification';
 
 const binary = process.env.MOMO_CORE_SERVER;
 if (!binary) throw Error('Set MOMO_CORE_SERVER to the pinned Core binary');
@@ -27,7 +28,7 @@ const coreAccountSentinel = join(root, 'core', 'model-connections.json');
 const hostAccountsPath = join(root, 'private-host', 'accounts.json');
 mkdirSync(join(root, 'core'));
 writeFileSync(coreAccountSentinel, 'not a Core resource');
-const requests: { authorization: string | undefined; body: Record<string, unknown> }[] = [];
+const requests: { authorization: string | undefined; body: Record<string, unknown>; path: string }[] = [];
 const nativeFetch = globalThis.fetch;
 let wireError = '';
 globalThis.fetch = async (...args) => {
@@ -45,7 +46,19 @@ const provider = httpServer(async (request, response) => {
   const chunks: Buffer[] = [];
   for await (const chunk of request) chunks.push(Buffer.from(chunk));
   const body = record(JSON.parse(Buffer.concat(chunks).toString()));
-  requests.push({ authorization: request.headers.authorization, body });
+  requests.push({ authorization: request.headers.authorization, body, path: request.url ?? '' });
+  if (request.url === '/v1/embeddings') {
+    if ((body.input as string[]).some((input) => input.includes('Cancel embedding fixture'))) {
+      await new Promise<void>((resolve) => {
+        const timer = setTimeout(resolve, 30000).unref();
+        response.once('close', () => { clearTimeout(timer); resolve(); });
+      });
+      if (response.destroyed) return;
+    }
+    response.writeHead(200, { 'Content-Type': 'application/json' });
+    response.end(JSON.stringify({ model: body.model, data: (body.input as string[]).map((_, index) => ({ index, embedding: [1, 0.5, 0.25] })) }));
+    return;
+  }
   if (body.stream !== true) {
     response.writeHead(200, { 'Content-Type': 'application/json' });
     response.end(JSON.stringify({ id: 'fixture-upstream', choices: [{ message: { role: 'assistant', content: '完整接入成功' }, finish_reason: 'stop' }] }));
@@ -327,6 +340,7 @@ try {
     get, post, call: (path, input) => call(action, path, input), client, space, other: second.id,
     roleId: role.id, conversationId: conversation.id, upstream: requests,
   });
+  await verifyEmbeddings({ call: (path, input) => call(action, path, input), client, space, conversation: conversation.id, requests });
   console.log(
     'PASS: Web HTTP host + real Core character editing/conversation, prompt save/reset, sparse policy/CAS, memory/NSG reads and Space isolation',
   );

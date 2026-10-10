@@ -277,6 +277,7 @@ export class CoreClient {
             memory_write_space_id: this.config.personalSpaceId,
             mo_state: true,
             ...(parameters?.modelRoutes ? { model_routes: parameters.modelRoutes } : {}),
+            ...(parameters?.embedding ? { embedding: parameters.embedding } : {}),
           },
         }),
       },

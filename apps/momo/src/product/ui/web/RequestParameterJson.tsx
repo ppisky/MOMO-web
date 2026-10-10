@@ -29,8 +29,8 @@ export function RequestParameterJson({
   return (
     <>
       <Textarea
-        label="请求参数 JSON"
-        description="stream 与流式开关同步，控制实际请求。温度、top_p、max_output_tokens 删除后跟随模型；删除 stream 保留当前开关。额外参数需获个人空间策略允许。"
+        label="对话请求参数 JSON"
+        description="仅用于对话请求，不用于视觉回退、记忆提取、语义网整理或向量化。stream 与流式开关同步；温度、top_p、max_output_tokens 删除后跟随模型，删除 stream 保留当前开关。额外参数需获个人空间策略允许。"
         value={draft}
         autosize
         minRows={5}

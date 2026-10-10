@@ -74,6 +74,7 @@ function ChatSession({
   const [messages, setMessages] = useState<ViewMessage[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [embeddingWarning, setEmbeddingWarning] = useState(false);
   const active = useRef<{ requestId: string; controller: AbortController; generation: number } | null>(null);
   const generation = useRef(0);
   const retry = useRef<{ requestId: string; input: string } | null>(null);
@@ -120,6 +121,7 @@ function ChatSession({
     setIsRunning(true);
     setError(null);
     let state = initialProjection(requestId);
+    setEmbeddingWarning(false);
     const started = performance.now();
     let firstToken: number | undefined;
     try {
@@ -162,6 +164,7 @@ function ChatSession({
               : '连接中断，结果需要确认',
         );
       retry.current = null;
+      setEmbeddingWarning(state.embeddingDegraded === true);
       if (generation.current === run.generation) reload();
     } catch (cause) {
       if (generation.current !== run.generation) return;
@@ -351,6 +354,9 @@ function ChatSession({
             })}
         </Stack>
       </Box>
+      {embeddingWarning && <Alert color="yellow" mx="md" mb="sm" title="向量化未完成">
+        语义网向量检索暂不可用，本次使用常规检索。请检查向量化模型、维数和连接配置。
+      </Alert>}
       {error && (
         <Alert color="red" mx="md" mb="sm" title="回复尚未完成">
           <Text size="sm">{error}</Text>

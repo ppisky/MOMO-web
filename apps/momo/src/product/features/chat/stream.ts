@@ -1,7 +1,7 @@
 import { record, text } from '../../contracts/core';
 
 export type CoreEvent = { type: string; request_id: string; sequence: number; data: Record<string, unknown> };
-export type Projection = { requestId: string; sequence: number; text: string; parts: Record<string, string>; terminal: 'completed' | 'failed' | 'cancelled' | null };
+export type Projection = { requestId: string; sequence: number; text: string; parts: Record<string, string>; terminal: 'completed' | 'failed' | 'cancelled' | null; embeddingDegraded?: boolean };
 
 export function parseEvent(value: unknown): CoreEvent {
   const data = record(value);
@@ -31,6 +31,16 @@ export function projectEvent(state: Projection, event: CoreEvent): Projection {
     const response = record(event.data.response);
     if (response.status !== 'completed') throw new Error('完成事件缺少 completed 终态');
     if (typeof response.output_text === 'string') next.text = response.output_text;
+    if (response.momo != null) {
+      const metadata = record(response.momo)
+      if (metadata.warnings !== undefined) {
+        if (!Array.isArray(metadata.warnings) || metadata.warnings.some((warning) => typeof warning !== 'string'))
+          throw Error('无效 Core 警告')
+        next.embeddingDegraded = metadata.warnings.some((warning: string) =>
+          /^embedding(?: index)? degraded:/.test(warning)
+        )
+      }
+    }
     next.terminal = 'completed';
   } else if (event.type === 'response.failed' || event.type === 'error') next.terminal = event.data.error && record(event.data.error).code === 'cancelled' ? 'cancelled' : 'failed';
   else if (event.type === 'response.cancelled') next.terminal = 'cancelled';

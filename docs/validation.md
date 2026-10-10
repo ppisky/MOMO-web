@@ -1,6 +1,22 @@
+# 模型类型、独立用途与真实向量化验证
+
+2026-10-10。Web 基线 62c18c999431ece0dbeae0251a713276a2f8e534，独立 Core eb4f271d1fdaccb1536ca293505f2c5a22b0e14b；App、ron 未修改。按 [0010](decisions/0010-model-types-and-purposes.md) 实施，撤销上一轮未确认的折叠布局提案。
+
+- Web 严格类型、43 项产品测试、无 Electron 边界及生产构建通过。检查覆盖用途直接选模型、类型过滤、旧用途组转为模型引用、对话参数不复制到后台、向量维数及冻结重试、降级状态不保存原始服务商诊断。相关 lint 无错误，保留已有风格/依赖警告；构建保留 Tailwind/chunk 提示。
+- Core 使用 Rust 1.99.0：217 项 Core、30 项 server 单元测试、受影响库严格 Clippy、格式与 locked server 构建通过。
+- 真实 Web HTTP → 隔离 Core → 离线模型：首次对话为两个 NSG 节点建索引并生成查询向量；下一轮仅生成查询向量，复用两条节点向量。索引状态 indexed_count=2、dimension=3、missing_count=0。向量请求不包含对话采样、最大输出、frequency_penalty 或 stream。
+- 错误模型类型与零维数在宿主拒绝；声明维数 4、实际返回 3 时仍完成常规检索回复，明确携带向量降级状态，维数 3 的旧索引和 NSG 原始节点保持不变。关闭向量化后不再调用 embeddings。取消能中断等待中的向量请求并保留有效索引。
+- 保留原流式/完整 JSON、提示词差量、角色开场、记忆/NSG 配置、归档/CAS、空间范围及加密 MOC 回归，真实联调全部通过。
+- 浏览器 12209：视觉回退列表仅有视觉模型，文本对话下不出现不合资格的“跟随对话”；向量化列表仅有向量化模型，与语义网整理独立。编辑器完整显示“对话请求参数 JSON”。经页面保存维数 4、Enter 发送，显示完整回复及“向量化未完成”提示；恢复 3 并保存成功，控制台无 warn/error。截图 .cache/model-purpose-embedding-20261010.png、.cache/embedding-degraded-20261010.png。
+- 日常 Core 18876 和 Web 1212 更新前备份当前配置与数据，保留已在上次快照后更新的服务商配置。更新后的空间、模型/参数、角色、历史、记忆、NSG、来源哈希与更新前一致。测试只使用隔离数据，截图、备份、数据库及构建产物不提交。
+
+配置向量化目前复用 Core 的 OpenAI 兼容 embeddings 接口与固定 L2 profile；没有验证付费服务商、额外模型协议或 ron 桌面。配置快照导入恢复仍未实现。
+
+---
+
 # 提示词差量与实际流式验证
 
-2026-10-10。Web 基线 9c53c593059b9323187d1590b5e3ded5091e34c5，Core 保持 c44f5ffee737f5915f9baae20b49a33717eaced1；App、ron、Core 未修改。按 [0009 补充边界](decisions/0009-settings-and-portable-configuration.md#2026-10-10提示词差量与流式一致性) 实施，模型参数紧凑布局仍待讨论。
+2026-10-10。Web 基线 9c53c593059b9323187d1590b5e3ded5091e34c5，Core 保持 c44f5ffee737f5915f9baae20b49a33717eaced1；App、ron、Core 未修改。按 [0009 补充边界](decisions/0009-settings-and-portable-configuration.md#2026-10-10提示词差量与流式一致性) 实施；当时待讨论的折叠参数布局已在后续 [0010](decisions/0010-model-types-and-purposes.md) 撤销。
 
 - 40 项产品测试通过，覆盖仅选有资格的提示词、非法来源、JSON 布尔 stream、不混入供应商参数、真实 Core wire false 和重试冻结。严格类型、无 Electron 边界、生产构建通过。改动的 JSON/MOC 组件和选择模块 lint 无警告；参数契约保留此前 3 个非空断言风格警告。构建保留既有 Tailwind/chunk 提示。
 - 真实 Web HTTP → 隔离 Core → 离线模型：开启真实流式正常完成，关闭时走完整 JSON 回复并适配为单个完成事件；同请求 ID 改为开启后重试仍保留首次关闭模式，无重复上游调用、无重复消息。非法 stream 字符串在宿主拒绝。

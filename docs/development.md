@@ -16,7 +16,7 @@ Windows 可用根目录 node_modules/.bin/pnpm.cmd；系统 Node 22 启动 pnpm 
 | pnpm build | dist/web 浏览器产物 + dist/host 服务产物 |
 | pnpm preview | 生产资源与同一 API 宿主，默认 1212 |
 
-真实 Core 测试要求环境变量 MOMO_CORE_SERVER 指向已编译的 c44f5ffee737f5915f9baae20b49a33717eaced1 momo-server。测试自行创建临时数据/宿主目录、随机端口和离线模型，不读取本机用户配置。测试结束停止自己的进程。
+真实 Core 测试要求环境变量 MOMO_CORE_SERVER 指向已编译的 eb4f271d1fdaccb1536ca293505f2c5a22b0e14b momo-server。测试自行创建临时数据/宿主目录、随机端口和离线模型，不读取本机用户配置。测试结束停止自己的进程。资源联调包含 NSG 向量化的真实索引、增量复用、维数失败保护与取消。
 
 浏览器隔离验收：先 pnpm build，再在应用目录设置上述 MOMO_CORE_SERVER 并运行 pnpm exec tsx test/product/resources.integration.ts --browser。它运行真实集成测试后保留隔离 Core、fixture 模型和生产 preview 12209；用 http://127.0.0.1:12209/ 检查角色配置与直接新对话、记忆/NSG 保存/归档/恢复、MO State 配置和范围 MOC 下载。Ctrl+C 结束测试并停止这些服务，不影响日常 1212 和用户 Core。
 

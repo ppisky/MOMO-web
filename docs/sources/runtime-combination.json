@@ -1,13 +1,13 @@
 {
-  "webBaseline": "9c53c593059b9323187d1590b5e3ded5091e34c5",
-  "coreRevision": "c44f5ffee737f5915f9baae20b49a33717eaced1",
+  "webBaseline": "62c18c999431ece0dbeae0251a713276a2f8e534",
+  "coreRevision": "eb4f271d1fdaccb1536ca293505f2c5a22b0e14b",
   "coreSource": "MOMO-core independent repository, codex/space-lifecycle worktree",
-  "previousCoreRevision": "60ae97aff99398b835311c716759d59d06dbce67",
+  "previousCoreRevision": "c44f5ffee737f5915f9baae20b49a33717eaced1",
   "rust": "1.99.0",
   "pnpm": "10.33.0",
   "node": "26.11.1",
   "verified": "2026-10-10",
-  "scope": "Override-only prompt export with quick and detailed MOC selection, explicit synchronized stream JSON and actual Core delivery mode with frozen retries, text model type naming and MO State profile explanations; retained optional context, governed parameters and existing-data services",
+  "scope": "Type-gated direct purpose models, dialogue-only request JSON, configured NSG embedding selection with Core incremental indexing/retrieval/cancellation and explicit degradation; retained prompt delta export, stream delivery, scopes and existing-data services",
   "appChanged": false,
   "ronChanged": false
 }

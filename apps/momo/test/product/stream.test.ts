@@ -14,6 +14,18 @@ function bytes(source: string, chunkSize = 1) {
 
 const event = (type: string, sequence: number, fields: Record<string, unknown> = {}, request_id = 'req_contract') => parseEvent({ type, sequence, request_id, ...fields });
 
+test('completed responses expose embedding degradation without copying upstream diagnostics into UI state', () => {
+  const value = projectEvent(initialProjection('req_contract'), event('response.completed', 1, {
+    response: { status: 'completed', output_text: 'reply', momo: { warnings: ['embedding index degraded: private provider diagnostic'] } },
+  }));
+  assert.equal(value.terminal, 'completed');
+  assert.equal(value.embeddingDegraded, true);
+  assert.equal(JSON.stringify(value).includes('private provider diagnostic'), false);
+  assert.throws(() => projectEvent(initialProjection('req_contract'), event('response.completed', 1, {
+    response: { status: 'completed', momo: { warnings: [12] } },
+  })));
+});
+
 test('frozen wire fixtures and original notices match their recorded source hashes', async () => {
   const base = new URL('../contracts/fixtures/', import.meta.url);
   const manifest = JSON.parse(await readFile(new URL('sources.json', base), 'utf8')) as { files: { local: string; sha256: string }[]; notices: { path: string; sha256: string }[] };

@@ -36,6 +36,8 @@ stream 是浏览器输出偏好，也是本次 Core 请求的显式控制字段�
 
 ## 构建约束
 
+用途配置按 [0010](decisions/0010-model-types-and-purposes.md) 直接引用符合类型的模型；对话请求参数 JSON 不参与后台用途。向量化选择与维数冻结进请求，由 Core 宿主解析不可变连接，Core 复用自身增量索引和查询实现；未选择时显式关闭向量请求，不影响普通检索。Core 的向量降级在对话页使用现有 Alert 显示，不把降级回复误报为向量化已成功。
+
 现有 Vite 7、React 18、pnpm 10 保持不变。实际浏览器模块图禁止 .server.ts、Node 内建模块和 Electron；生产宿主单独构建，不把 Core 地址、配置目录或密钥注入客户端环境。check:web 继续检查无 Electron 依赖、原生桥和启动脚本。
 
 0009 增补：模型未声明上下文长度和功能路由额外参数修在 Core；Web 参数 JSON 与表单、请求重放共用一份参数组。记忆生命周期仍存 Core mo_state.memory_lifecycle，页面放在记忆与语义网；MO State 恢复继承不清除此块。通用设置统一管理全部提示词空间，记忆与语义网页不重复编辑器。MOC 配置使用既有 HostMocModule，Web 从白名单资源生成扩展快照，不给 Core 增加 Web 设置数据库依赖。配置导出路径及临时文件仅由服务端管理。

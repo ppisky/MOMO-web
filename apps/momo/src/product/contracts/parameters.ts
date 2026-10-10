@@ -1,4 +1,5 @@
 import { record, text, uuid } from './core'
+import type { Models } from './models'
 export type ParameterGroup = {
   id: string
   name: string
@@ -14,22 +15,35 @@ export const purposeNames = {
   semantic_graph_governance: '语义网整理',
 } as const
 export type ModelPurpose = keyof typeof purposeNames
+export function modelsForPurpose(catalog: Models | null | undefined, purpose: ModelPurpose | 'embedding') {
+  return (
+    catalog?.models.filter((model) =>
+      purpose === 'vision'
+        ? model.kind === 'vision'
+        : purpose === 'embedding'
+          ? model.kind === 'embedding'
+          : model.kind !== 'embedding'
+    ) ?? []
+  )
+}
 export type Parameters = {
   revision: number
   selectedId: string
   groups: ParameterGroup[]
   purposes?: Partial<Record<ModelPurpose, string | null>>
+  embedding?: { modelId: string; dimension: number | null } | null
 }
 export type ResolvedParameters = ParameterGroup & {
   stream?: boolean
   modelReference?: string
+  embedding?: { model: string | null; dimension: number | null }
   modelRoutes?: Record<
     string,
     {
       model: string
-      temperature: number | null
-      top_p: number | null
-      max_output_tokens: number | null
+      temperature?: number | null
+      top_p?: number | null
+      max_output_tokens?: number | null
       parameters?: Record<string, unknown>
     }
   >
@@ -78,10 +92,22 @@ export function parameters(value: unknown): Parameters {
   const purposes: Parameters['purposes'] = {}
   for (const key of Object.keys(purposeNames) as ModelPurpose[]) {
     const id = rawPurposes[key] == null ? null : uuid(rawPurposes[key])
-    if (id && !groups.some((g) => g.id === id)) throw Error('用途参数组不存在')
-    purposes[key] = id
+    const legacyGroup = groups.find((g) => g.id === id)
+    purposes[key] = legacyGroup ? legacyGroup.modelId : id
   }
-  return { revision: Number(v.revision), selectedId, groups, purposes }
+  let embedding: Parameters['embedding']
+  if (v.embedding != null) {
+    const e = record(v.embedding)
+    embedding = { modelId: uuid(e.modelId), dimension: nullable(e.dimension, 1, 8192, true) }
+    if (embedding.dimension === null) throw Error('请填写向量维数')
+  }
+  return {
+    revision: Number(v.revision),
+    selectedId,
+    groups,
+    purposes,
+    ...(v.embedding === undefined ? {} : { embedding: embedding ?? null }),
+  }
 }
 export function requestParameters(group: ParameterGroup) {
   const extra = { ...group.parameters, ...(group.topP === null ? {} : { top_p: group.topP }) }
@@ -108,6 +134,15 @@ export function resolvedParameters(input: unknown): ResolvedParameters {
     result.stream = raw.stream
   }
   if (raw.modelReference !== undefined) result.modelReference = reference(raw.modelReference)
+  if (raw.embedding !== undefined) {
+    const e = record(raw.embedding)
+    if (e.model === null && e.dimension === null) result.embedding = { model: null, dimension: null }
+    else {
+      if (!Number.isInteger(e.dimension) || Number(e.dimension) < 1 || Number(e.dimension) > 8192)
+        throw Error('无效向量维数')
+      result.embedding = { model: reference(e.model), dimension: Number(e.dimension) }
+    }
+  }
   if (raw.modelRoutes !== undefined) {
     const routes = record(raw.modelRoutes)
     if (Object.keys(routes).some((key) => !(key in purposeNames))) throw Error('未知模型用途')
@@ -121,9 +156,9 @@ export function resolvedParameters(input: unknown): ResolvedParameters {
             {
               id,
               name: group.name,
-              temperature: route.temperature,
-              topP: route.top_p,
-              maxOutput: route.max_output_tokens,
+              temperature: route.temperature ?? null,
+              topP: route.top_p ?? null,
+              maxOutput: route.max_output_tokens ?? null,
               parameters: route.parameters,
             },
           ],
@@ -132,9 +167,9 @@ export function resolvedParameters(input: unknown): ResolvedParameters {
           purpose,
           {
             model: reference(route.model),
-            temperature: validated.temperature,
-            top_p: validated.topP,
-            max_output_tokens: validated.maxOutput,
+            ...(route.temperature === undefined ? {} : { temperature: validated.temperature }),
+            ...(route.top_p === undefined ? {} : { top_p: validated.topP }),
+            ...(route.max_output_tokens === undefined ? {} : { max_output_tokens: validated.maxOutput }),
             ...(validated.parameters ? { parameters: validated.parameters } : {}),
           },
         ]

@@ -14,7 +14,7 @@ import {
 } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { record, list, text } from '../../contracts/core';
-import { parameters, purposeNames, type ModelPurpose, type Parameters } from '../../contracts/parameters';
+import { parameters, purposeNames, modelsForPurpose, type ModelPurpose, type Parameters } from '../../contracts/parameters';
 import { models, type Models } from '../../contracts/models';
 import { parameterPolicy, enableParameterPolicy } from '../../contracts/parameter-policy';
 import { useProduct } from './context';
@@ -348,7 +348,7 @@ export function ModelParameters() {
     try {
       setConfig(parameters(await api('/api/parameters', config)));
       window.dispatchEvent(new Event('momo-models-changed'));
-      addToast('参数组已保存，后续请求按所在空间策略应用');
+      addToast('模型配置已保存，后续请求按所在空间策略应用');
     } catch (e) {
       setError(e instanceof Error ? e.message : '保存失败');
     } finally {
@@ -469,46 +469,98 @@ export function ModelParameters() {
             onChange={(value) => patch(value)}
             onError={setJsonError}
           />
-          <Title order={6}>功能模型</Title>
-          <Text size="sm" c="dimmed">
-            未单独指定时，使用当前对话的模型和参数。向量化模型不参与生成。
-          </Text>
-          {(Object.entries(purposeNames) as [ModelPurpose, string][]).map(([purpose, label]) => (
-            <Select
-              key={purpose}
-              label={label}
-              allowDeselect={false}
-              value={config.purposes?.[purpose] ?? 'follow'}
-              data={[
-                { value: 'follow', label: '跟随对话' },
-                ...config.groups
-                  .filter(
-                    (g) =>
-                      purpose !== 'vision' ||
-                      catalog?.models.some((m) => m.id === g.modelId && m.kind === 'vision'),
-                  )
-                  .map((g) => ({ value: g.id, label: g.name })),
-              ]}
-              onChange={(id) =>
-                setConfig({
-                  ...config,
-                  purposes: { ...config.purposes, [purpose]: id === 'follow' ? null : id },
-                })
-              }
-            />
-          ))}
+          {!!catalog?.models.length && <>
+            <Title order={6}>功能模型</Title>
+            <Text size="sm" c="dimmed">
+              按模型类型选择用途；未单独指定时跟随对话模型。对话请求参数仅用于对话。
+            </Text>
+          </>}
+          {(Object.entries(purposeNames) as [ModelPurpose, string][])
+            .filter(([purpose]) => modelsForPurpose(catalog, purpose).length > 0)
+            .map(([purpose, label]) => (
+              <Select
+                key={purpose}
+                label={label}
+                allowDeselect={false}
+                value={
+                  config.purposes?.[purpose] ??
+                  (purpose !== 'vision' || catalog?.models.some((m) => m.id === current.modelId && m.kind === 'vision')
+                    ? 'follow'
+                    : null)
+                }
+                placeholder="请选择视觉回退模型"
+                searchable
+                clearable={purpose === 'vision'}
+                data={[
+                  ...(purpose !== 'vision' ||
+                  catalog?.models.some((m) => m.id === current.modelId && m.kind === 'vision')
+                    ? [{ value: 'follow', label: '跟随对话' }]
+                    : []),
+                  ...(modelsForPurpose(catalog, purpose).map((m) => ({
+                    value: m.id,
+                    label: `${m.name} · ${catalog?.providers.find((p) => p.id === m.provider_id)?.name ?? ''}`,
+                  })) ?? []),
+                ]}
+                onChange={(id) =>
+                  setConfig({
+                    ...config,
+                    purposes: { ...config.purposes, [purpose]: id === 'follow' ? null : id },
+                  })
+                }
+              />
+            ))}
+          {catalog && modelsForPurpose(catalog, 'embedding').length > 0 && (
+            <>
+              <Select
+                label="语义网向量化模型"
+                description="用于语义网索引与相似度检索，独立于语义网整理模型。"
+                searchable
+                clearable
+                value={config.embedding?.modelId ?? null}
+                placeholder="不使用向量化"
+                data={modelsForPurpose(catalog, 'embedding').map((m) => ({
+                  value: m.id,
+                  label: `${m.name} · ${catalog.providers.find((p) => p.id === m.provider_id)?.name ?? ''}`,
+                  disabled: !catalog.providers.some(
+                    (p) => p.id === m.provider_id && ['openai', 'openai_responses'].includes(p.protocol)
+                  ),
+                }))}
+                onChange={(id) =>
+                  setConfig({
+                    ...config,
+                    embedding: id
+                      ? { modelId: id, dimension: config.embedding?.modelId === id ? config.embedding.dimension : null }
+                      : null,
+                  })
+                }
+              />
+              {config.embedding && (
+                <NumberInput
+                  label="向量维数"
+                  description="填写该模型的实际输出维数，Core 用于校验和区分索引；不修改模型的输出维数。"
+                  min={1}
+                  max={8192}
+                  allowDecimal={false}
+                  value={config.embedding.dimension ?? ''}
+                  onChange={(value) => {
+                    if (config.embedding)
+                      setConfig({
+                        ...config,
+                        embedding: { ...config.embedding, dimension: typeof value === 'number' ? value : null },
+                      })
+                  }}
+                />
+              )}
+            </>
+          )}
           <Flex justify="flex-end">
             <Button
               color="red"
               variant="subtle"
               disabled={config.groups.length === 1}
               onClick={() => {
-                if (Object.values(config.purposes ?? {}).includes(current.id)) {
-                  setError('此参数组仍被功能模型使用，请先更换对应功能的参数组。');
-                  return;
-                }
-                const groups = config.groups.filter((g) => g.id !== current.id);
-                setConfig({ ...config, groups, selectedId: groups[0]!.id });
+                const groups = config.groups.filter((g) => g.id !== current.id)
+                setConfig({ ...config, groups, selectedId: groups[0]!.id })
               }}
             >
               删除参数组
@@ -520,5 +572,5 @@ export function ModelParameters() {
         </>
       )}
     </Stack>
-  );
+  )
 }
