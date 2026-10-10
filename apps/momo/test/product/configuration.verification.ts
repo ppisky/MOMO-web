@@ -3,6 +3,7 @@ import { zstdDecompressSync } from 'node:zlib'
 import { record, list } from '../../src/product/contracts/core'
 import { newPolicy } from '../../src/product/contracts/assets'
 import type { CoreClient } from '../../src/product/lib/server/core.server'
+import { emptyExportSelection, chooseGroup, selectionState } from '../../src/product/features/moc/selection'
 export async function verifyConfiguration({
   get,
   post,
@@ -365,6 +366,37 @@ export async function verifyConfiguration({
   const protectedTar=zstdDecompressSync(Buffer.from(await protectedConfiguration.arrayBuffer())).toString();
   assert.ok(!protectedTar.includes('momo-web-preferences'));
   assert.ok(!protectedTar.includes('configuration-only-password'));
+  const quickAssets = chooseGroup(emptyExportSelection(), 'assets', true, [space]);
+  const quick = chooseGroup(quickAssets, 'configuration', true, [space]);
+  quick.scopes.semantic_graph = [];
+  quick.configuration = { global:['parameters'],prompts:['memory_distillation'],personal_spaces:[],spaces:{ memory_lifecycle:[space] } };
+  assert.equal(selectionState(quick, 'assets', [space]), 'partial');
+  assert.equal(selectionState(quick, 'configuration', [space]), 'partial');
+  const partialDownload = await call('moc', {
+    plan:{ characters:[],...quick.scopes,compatibility:'none' },
+    configuration:quick.configuration,protection:{ type:'none' },
+  });
+  assert.equal(partialDownload.status,200,await partialDownload.clone().text());
+  const partialBytes=zstdDecompressSync(Buffer.from(await partialDownload.arrayBuffer()));
+  const partialTar=partialBytes.toString();
+  for(const module of ['parameters','prompts','memory-lifecycle']) assert.ok(partialTar.includes('momo-web-'+module));
+  for(const module of ['models','preferences','mo-state','runtime','personal-spaces']) assert.ok(!partialTar.includes('momo-web-'+module));
+  assert.ok(partialTar.includes('Memory after'));
+  assert.ok(!partialTar.includes(other));
+  let partialManifest='';
+  for(let offset=0;offset+512<=partialBytes.length;){
+    const header=partialBytes.subarray(offset,offset+512);
+    const name=header.subarray(0,100).toString().split('\0')[0];
+    if(!name) break;
+    const length=parseInt(header.subarray(124,136).toString().replace(/\0/g,'').trim()||'0',8);
+    if(name==='manifest.toml') partialManifest=partialBytes.subarray(offset+512,offset+512+length).toString();
+    offset+=512+Math.ceil(length/512)*512;
+  }
+  assert.ok(partialManifest);
+  assert.ok(!partialManifest.includes('semantic_graph'));
+  assert.ok(!partialManifest.includes('conversations'));
+  assert.ok(!partialManifest.includes('characters'));
+  console.log('PASS: quick group selection + detailed exclusions produce only the selected assets and configuration modules');
   console.log(
     'PASS: full role/opening; atomic memory and NSG editing/archive/CAS; MO State settings/contract; scoped and encrypted MOC downloads'
   )

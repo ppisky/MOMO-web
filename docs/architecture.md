@@ -28,6 +28,8 @@ Web 的 api.assets 只校验宿主授权和表单，将完整内容、RecordPoli
 
 MO State 复用 runtime-settings 稀疏 PATCH、契约 CAS 和运行状态。MOC 路由只接受模块/空间/角色选择，由宿主生成临时路径、流式返回下载并清理文件；不接收浏览器指定的文件路径，不持久化密码。Core 保存/导出边界不复制到 UI。具体提交组合见 sources/runtime-combination.json。
 
+MOC 的快速分组只在 Web 选择层将范围映射到既有导出计划，细选与快速开关共用同一份选择，不新增后端导出协议。全局配置和空间配置仍按各自的实际归属导出。
+
 ## 构建约束
 
 现有 Vite 7、React 18、pnpm 10 保持不变。实际浏览器模块图禁止 .server.ts、Node 内建模块和 Electron；生产宿主单独构建，不把 Core 地址、配置目录或密钥注入客户端环境。check:web 继续检查无 Electron 依赖、原生桥和启动脚本。

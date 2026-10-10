@@ -1,5 +1,5 @@
 {
-  "webBaseline": "bf5274c",
+  "webBaseline": "a70b54b5f78b5eda14a88371e6e0f8c9f23ab82a",
   "coreRevision": "c44f5ffee737f5915f9baae20b49a33717eaced1",
   "coreSource": "MOMO-core independent repository, codex/space-lifecycle worktree",
   "previousCoreRevision": "60ae97aff99398b835311c716759d59d06dbce67",
@@ -7,7 +7,7 @@
   "pnpm": "10.33.0",
   "node": "26.11.1",
   "verified": "2026-10-10",
-  "scope": "Optional model context, governed JSON request parameters, memory lifecycle configuration, component-scoped MOC configuration export, unique general prompt editor and existing-data daily services",
+  "scope": "Optional model context, governed JSON request parameters, memory lifecycle configuration, component-scoped MOC configuration export with quick choices and detailed scope control, unique general prompt editor and existing-data daily services",
   "appChanged": false,
   "ronChanged": false
 }
