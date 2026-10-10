@@ -15,6 +15,8 @@
 
 生产执行 pnpm build、pnpm preview。build 同时生成 dist/web 浏览器资源和 dist/host 服务端模块；preview 使用相同 /api 适配，默认端口 1212。需要停止占用该端口的 dev。不能仅部署静态文件而省略 API 宿主。
 
+仅看模型参数：执行 `pnpm demo:parameters`，打开 http://127.0.0.1:1213/。预置文本、视觉和向量化演示模型，不需要 Core、服务商或密钥；复用正式页面，支持选择、参数组、JSON 编辑、保存和恢复，修改仅保存在该演示 origin。独立生产演示用 `pnpm build:demo:parameters`、`pnpm preview:demo:parameters`，可单独托管 `dist/model-parameters-demo` 静态文件。见 [演示边界](docs/decisions/0012-model-parameters-demo.md)。
+
 ## 当前能力
 
 - Core 角色卡完整字段（版本、作者/链接、人物设定、用户设定、开场白）编辑；默认助手、对话创建/改名、历史、流式回复/取消/重试。角色卡“新对话”直接创建对话并显示已保存的开场白。

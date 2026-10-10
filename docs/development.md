@@ -15,6 +15,9 @@ Windows 可用根目录 node_modules/.bin/pnpm.cmd；系统 Node 22 启动 pnpm 
 | pnpm test:product:spaces | 隔离真实 Core：空间资产迁移、删除和持久化 |
 | pnpm build | dist/web 浏览器产物 + dist/host 服务产物 |
 | pnpm preview | 生产资源与同一 API 宿主，默认 1212 |
+| pnpm demo:parameters | 只展示模型参数的离线演示，预置三类模型，1213 |
+| pnpm build:demo:parameters | 独立静态演示产物 dist/model-parameters-demo |
+| pnpm preview:demo:parameters | 生产演示，1213；不加载 API 宿主、不连接 Core |
 
 真实 Core 测试要求环境变量 MOMO_CORE_SERVER 指向已编译的 d3d598e63ab452dc112e5f06ac60a2f701bb8f28 momo-server。测试自行创建临时数据/宿主目录、随机端口和离线模型，不读取本机用户配置。测试结束停止自己的进程。资源联调包含 NSG 向量化的索引、增量复用、维数失败保护与取消，以及后台推荐值/独立覆盖、实际视觉/记忆/NSG 请求、向量 profile、MOC 差量和恢复/重试。维护 drain 仅用于隔离测试批次屏障，不向网页开放管理接口。
 

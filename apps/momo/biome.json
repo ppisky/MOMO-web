@@ -38,6 +38,8 @@
     "useEditorconfig": true,
     "includes": [
       "src/**",
+      "demos/**",
+      "vite.config.parameters-demo.ts",
       "packages/**",
       "test/integration/**/*.ts",
       "test/e2e/**/*.ts",
@@ -79,6 +81,8 @@
     },
     "includes": [
       "src/**",
+      "demos/**",
+      "vite.config.parameters-demo.ts",
       "packages/**",
       "test/integration/**/*.ts",
       "test/e2e/**/*.ts",

@@ -12,6 +12,8 @@
 - scripts/product-host-plugin.ts：Vite dev 和 preview 共用同源 /api；scripts/build-product-host.mjs 构建生产服务模块。
 - dist/web 与 dist/host：忽略的浏览器与服务产物。
 
+独立模型参数演示位于 `apps/momo/demos/model-parameters`。其 Vite 配置复用正式构建约束与主题，在演示模块图中将 Web API 替换为离线适配，移除生产 API 宿主插件；正式 ModelParameters、RequestParameterJson、PurposeRequestJson 源码不变。输出 `dist/model-parameters-demo` 纯静态站点，保存到独立 origin 的浏览器本地存储；不依赖或修改 Core、宿主数据库和服务商配置。见 [0012](decisions/0012-model-parameters-demo.md)。
+
 旧 renderer、shared 与 Chatbox 业务包保留作原功能的迁入参照，不与 Core 双写，也不能据此宣称这些能力已接入。原浏览器数据没有清除。Electron main/preload、IPC、桌面安装/打包工具链继续移除。
 
 ## 数据与请求
