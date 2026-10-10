@@ -16,6 +16,7 @@ import { api, workspace, type Workspace } from './api';
 import { Home } from './Home';
 import { Roles } from './Roles';
 import { Assets } from './Assets';
+import { MoStateManagement } from './MoStateManagement';
 import { ProductSettings } from './ProductSettings';
 import { SearchChats } from './Sessions';
 import { Notices, addToast } from './media';
@@ -158,6 +159,8 @@ function ProductRoot() {
       <Assets />
     ) : contentPath === '/nsg' ? (
       <Assets graph />
+    ) : contentPath === '/mo-state' ? (
+      <MoStateManagement key={data.spaceId} />
     ) : contentPath === '/about' ? (
       <Page title="关于 MOMO">
         <Stack p="xl" gap="md">

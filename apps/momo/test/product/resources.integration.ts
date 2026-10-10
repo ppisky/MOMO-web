@@ -21,6 +21,7 @@ import { parameterPolicy, enableParameterPolicy } from '../../src/product/contra
 import { verifyEmbeddings } from './embeddings.verification';
 import { verifyPurposeParameters } from './purpose-parameters.verification';
 import { verifyConversationArchive } from './archive.verification';
+import { verifyMoState } from './mo-state.verification';
 
 const binary = process.env.MOMO_CORE_SERVER;
 if (!binary) throw Error('Set MOMO_CORE_SERVER to the pinned Core binary');
@@ -63,8 +64,14 @@ const provider = httpServer(async (request, response) => {
   }
   if (body.stream !== true) {
     const maintenance = (body.messages as { content?: unknown }[] | undefined)?.some((m) => typeof m.content === 'string' && m.content.includes('"maintenance_kind"'));
+    const definitionMessage = (body.messages as { content?: unknown }[] | undefined)?.find((m) => typeof m.content === 'string' && m.content.includes('"character_definition"'));
+    const definition = definitionMessage ? record(record(JSON.parse(String(definitionMessage.content))).character_definition) : null;
+    const content = definition ? JSON.stringify({ schema: 'momo.ddm/1', character_id: definition.character_id, revision: 1, profile: 'logit_additive', dispositions: [{
+      id: 'gentle_voice', description: '温和表达并尊重伙伴的选择', base_activation: 0.8, constraints: ['Preserve user agency.'],
+      expression: { latent: 'Keep a gentle voice.', salient: 'Speak gently.', dominant: 'Speak gently and preserve user agency.' },
+    }] }) : maintenance ? 'patches: []' : '完整接入成功';
     response.writeHead(200, { 'Content-Type': 'application/json' });
-    response.end(JSON.stringify({ id: 'fixture-upstream', choices: [{ message: { role: 'assistant', content: maintenance ? 'patches: []' : '完整接入成功' }, finish_reason: 'stop' }] }));
+    response.end(JSON.stringify({ id: 'fixture-upstream', choices: [{ message: { role: 'assistant', content }, finish_reason: 'stop' }] }));
     return;
   }
   response.writeHead(200, { 'Content-Type': 'text/event-stream' });
@@ -346,6 +353,7 @@ try {
   await verifyEmbeddings({ call: (path, input) => call(action, path, input), client, space, conversation: conversation.id, requests });
   await verifyPurposeParameters({ call: (path, input) => call(action, path, input), client, space, conversation: conversation.id, requests });
   await verifyConversationArchive({ client, space, other: second.id, id: conversation.id, get, post, webOrigin });
+  await verifyMoState({ client, space, other: second.id, roleId: role.id, conversationId: conversation.id, get, post, call: (path, input) => call(action, path, input), upstream: requests });
   console.log(
     'PASS: Web HTTP host + real Core character editing/conversation, prompt save/reset, sparse policy/CAS, memory/NSG reads and Space isolation',
   );

@@ -3,7 +3,7 @@
 按 [0007](decisions/0007-preserve-core-progress.md) 纠正上一轮回退：已移除 Electron，并迁回已有 Core 通路、角色/记忆/NSG、空间、模型与参数组、提示词和固定输入行为。本仓库继续维护网页；App 与 ron 不再并行扩展产品。
 
 1. 当前：保持已恢复能力，验收同一 Core/宿主配置下资产身份一致、模型参数动态生效和聊天终态。不能再次只切到旧 renderer。
-2. 已完成 Core 角色字段与真实开场白、资产编辑/归档、独立 MO State 与范围 MOC 导出，见 [0008](decisions/0008-editable-assets-state-export.md)。运行此版本需升级至记录的 Core 提交。角色简介/头像等展示元数据继续按应用层边界补充。
+2. 已完成 Core 角色字段与真实开场白、资产编辑/归档、独立 MO State 配置与范围 MOC 导出，见 [0008](decisions/0008-editable-assets-state-export.md)；MO State 管理页及真实回复注入审计见 [0015](decisions/0015-mo-state-management.md)。运行此版本需升级至记录的 Core 提交。角色简介/头像等展示元数据继续按应用层边界补充。
 3. 继续完善 NSG 治理候选审批、来源逐修订审计和复杂关系图的呈现；当前内容、范围与边编辑/资产归档已通过真实 Core 验证。
 4. 按 [0014](decisions/0014-conversation-archive.md) 接入真实 Core 对话归档/恢复，继续参照保留的原 Chatbox 源码补分支/篇章；删除对话另需满足停止提取与保留资产边界。
 5. 网页真实业务稳定后再继续 ron 兼容。安装包、签名、更新和旧格式导入不在当前任务中。

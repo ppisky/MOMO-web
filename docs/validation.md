@@ -1,3 +1,13 @@
+# MO State 管理界面验证
+
+2026-10-11。Web 基线 62f2d99d24b15d3786068d48e321cc55e360195b；Core main 174cba356590fb7a1e8130296afb4c54be53f284。按 [0015](decisions/0015-mo-state-management.md) 实施，App、ron 未修改。
+
+- Core：Rust 1.99.0 locked，momo-storage / momo_core / momo-server 的库测试 288 项通过（34/223/31）；严格 Clippy（三个包 all-targets/all-features，-D warnings）、fmt check、服务构建和 diff check 通过。迁移保留旧快照，旧操作的回复关联默认为空；存储测试验证有界 20 条、空间隔离和只读，回复完成事务测试验证审计关联。
+- Web：pnpm 10.33.0，应用脚本 Node 26.11.1；严格类型检查、51 项产品测试、Web 边界检查、生产构建和 diff check 通过。构建仍有原 Tailwind 类歧义与大 chunk 提示。终端启动 pnpm 的系统 Node 22 engine 提示不影响已固定的应用脚本运行时。
+- 隔离真实 Core + Web HTTP + 离线模型联调通过：只读查询不调用模型/写历史；跨个人空间读为空、其他空间重置角色返回 404；生成的状态记录关联真实请求/会话，包含带来源空间的记忆与 NSG 输入 ID；观察模式不注入，启用模式的最终 state section 有真实 token 审计。派生 DDM 查询/重置/后续对话重建通过，角色卡、记忆/NSG 和已有快照不变。原模型参数、流式重放、角色开场、归档、向量索引和 MOC 回归通过。
+- 隔离生产 preview 12209 实际浏览器验收：查看场景/五维约束、展开输入依据、从处理记录“查看”进入观察模式快照、读取侧写并通过确认框实际重置、切换空空间、设置往返。停掉隔离 Core 后刷新明确显示连接失败并保留旧结果；正常操作控制台无 warn/error。截图在忽略目录 `.cache/mo-state-management-20261011.png` 和 `.cache/mo-state-management-failure-20261011.png`，隔离服务与验证标签页已关闭。
+- 日常服务已更新：1212 Web 与 18876 Core 使用新构建；停止旧数据所有者后备份 Core/宿主目录至 `D:/AI/MOMO-core-space-lifecycle/.codex-tmp/backup-mo-state-management-20261011/`。升级前后，两个人空间的角色、对话身份与消息、记忆/NSG、运行配置/契约、模型参数和空间目录逻辑哈希一致。日常管理 API 返回 200；浏览器显示“尚无自治状态记录”，没有为填充界面生成虚构状态或修改现有配置。
+
 # MO State 运行模式命名验证
 
 2026-10-11。Web 基线 8955a86bd5e3bd21fdebd34de60df7a5343cb811，依据 [0009 补充](decisions/0009-settings-and-portable-configuration.md#2026-10-11mo-state-运行模式命名) 仅统一文案。Core 保持 cfe22234d819d3c620a360ee787604d0479c49bf，App、ron 未修改。

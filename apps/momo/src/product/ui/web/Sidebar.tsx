@@ -6,6 +6,7 @@ import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 
 import {
   IconArchive,
+  IconActivity,
   IconCirclePlus,
   IconInfoCircle,
   IconLayoutSidebarLeftCollapse,
@@ -189,6 +190,15 @@ export default function Sidebar() {
             leftSection={<IconTopologyStar3 size={20} />}
             onClick={() => {
               navigate('/nsg');
+              closeMobile();
+            }}
+          />
+          <NavLink
+            className="rounded-lg"
+            label="MO State"
+            leftSection={<IconActivity size={20} />}
+            onClick={() => {
+              navigate('/mo-state');
               closeMobile();
             }}
           />

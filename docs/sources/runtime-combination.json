@@ -1,13 +1,13 @@
 {
-  "webBaseline": "641dfd94d220f3aaed033c5bd7a2e60ac4a255cb",
-  "coreRevision": "cfe22234d819d3c620a360ee787604d0479c49bf",
+  "webBaseline": "62f2d99d24b15d3786068d48e321cc55e360195b",
+  "coreRevision": "174cba356590fb7a1e8130296afb4c54be53f284",
   "coreSource": "MOMO-core independent repository, main",
-  "previousCoreRevision": "db55de27a40ab537ec56cd4e1ab32a507666a028",
+  "previousCoreRevision": "cfe22234d819d3c620a360ee787604d0479c49bf",
   "rust": "1.99.0",
   "pnpm": "10.33.0",
   "node": "26.11.1",
   "verified": "2026-10-11",
-  "scope": "Persisted scoped conversation archive/restore, active and archived Web lists, preserved history/assets, MOC and space migration; standard English protocol names. Retains OpenAI Chat/Responses and native embedding dimensions from the previous verified revision.",
+  "scope": "Independent MO State management, bounded read-only operation/snapshot diagnostics, atomic completed-response audit links, captured evidence IDs and derived DDM query/reset. Retains scoped conversation archive/restore, model protocols and native embedding configuration from the previous verified revision.",
   "appChanged": false,
   "ronChanged": false
 }

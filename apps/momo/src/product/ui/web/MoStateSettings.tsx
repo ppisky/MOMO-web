@@ -20,7 +20,7 @@ function changedFields(before: Record<string, unknown>, after: Record<string, un
   )
 }
 export function MoStateSettings() {
-  const { data } = useProduct()
+  const { data, navigate } = useProduct()
   const runtime = useResource('runtime'),
     contract = useResource('state-contract'),
     status = useResource('state-runtime')
@@ -91,6 +91,7 @@ export function MoStateSettings() {
       <Text size="sm" c="dimmed">
         协调当前场景、记忆与语义网，生成参与对话的状态上下文。配置作用于当前个人空间。
       </Text>
+      <Button variant="light" style={{ alignSelf: 'flex-start' }} onClick={() => navigate('/mo-state')}>查看状态与处理记录</Button>
       {(failure || runtime.error || contract.error || status.error) && (
         <Alert color="red">{failure || runtime.error || contract.error || status.error}</Alert>
       )}

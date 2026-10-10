@@ -2,6 +2,7 @@ import { character, conversation, list, message, record, text, uuid } from '../.
 import { assets, receipt, type Removal } from '../../contracts/spaces';
 import type { ResolvedParameters } from '../../contracts/parameters';
 import { requestParameters } from '../../contracts/parameters';
+import { stateManagement, managedDdm } from '../../contracts/mo-state';
 
 type HostConfig = { coreOrigin: string; personalSpaceId: string; conversationSpaceId: string; applicationOrigin?: string };
 type HostGlobal = typeof globalThis & {
@@ -86,6 +87,8 @@ export class CoreClient {
       )
     }
     if (!response.ok) {
+      if (path.startsWith('/v1/mo-state/management?') && [404, 405].includes(response.status))
+        throw new CoreError(409, 'core_version_mismatch', '当前 Core 缺少 MO State 管理接口，请更新与网页配套的 Core。');
       if (/^\/v1\/conversations\/[0-9a-f-]+\/archive$/.test(path) &&
           (response.status === 405 || (response.status === 404 && !response.headers.get('Content-Type')?.includes('application/json'))))
         throw new CoreError(409, 'core_version_mismatch', '当前 Core 缺少对话归档接口，请更新与网页配套的 Core。')
@@ -135,6 +138,23 @@ export class CoreClient {
     const version = text(value.core_version, 'core_version');
     if (!/^1\.0\.0(?:-rc\.\d+)?$/.test(version)) throw new Error(`未验证的 Core 版本：${version}`);
     return version;
+  }
+
+  async moStateManagement() {
+    const value: unknown = await (await this.request(`/v1/mo-state/management?space_id=${this.config.personalSpaceId}`)).json();
+    stateManagement(value, this.config.personalSpaceId);
+    return value;
+  }
+
+  async moStateDdm(id: string, reset = false) {
+    const characterId = uuid(id);
+    if (!(await this.characters()).some((role) => role.id === characterId))
+      throw new CoreError(404, 'character_not_found');
+    const value: unknown = await (await this.request(`/v1/mo-state/ddm-profile?space_id=${this.config.personalSpaceId}&character_id=${characterId}`, reset ? { method: 'DELETE' } : {})).json();
+    if (reset) {
+      if (record(value).ok !== true) throw new CoreError(502, 'ddm_reset_mismatch');
+    } else managedDdm(value, characterId);
+    return value;
   }
 
   async characters() {

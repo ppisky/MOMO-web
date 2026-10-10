@@ -7,7 +7,7 @@
 使用 pnpm 10.33.0。应用脚本使用 pnpm 提供的 Node 26.11.1，根目录启动器支持系统 Node 22.20+。
 
 1. 根目录执行 pnpm install、pnpm setup。
-2. 单独启动兼容的 MOMO-core；已验证 revision 为 cfe22234d819d3c620a360ee787604d0479c49bf。
+2. 单独启动兼容的 MOMO-core；已验证 revision 为 174cba356590fb7a1e8130296afb4c54be53f284。
 3. 复制 apps/momo/.env.example 为 .env.local，填写 MOMO_CORE_ORIGIN（仅 loopback）。已有配置必须让 MOMO_APP_DATA_DIR 指向原 host-config.sqlite3 所在目录，保留 Space ID、参数组和当前空间；不搬动或重新初始化 Core 数据。
 4. 根目录执行 pnpm dev，打开 http://127.0.0.1:1212/。
 
@@ -27,6 +27,8 @@
 - 通用设置统一管理全部提示词空间，包括记忆提取和语义网维护；独立记忆/NSG 设置只管理自动维护与生命周期策略，不重复提示词选项。保留对话显示与外观设置。Enter 发送、Shift+Enter 换行，IME 不发送；没有快捷键设置和“仅保存不回复”。
 
 Core 拥有角色、会话、记忆和 NSG；Web 宿主保存空间目录和参数组。浏览器只保存界面偏好/装饰资源，活动入口不再运行旧 IndexedDB 聊天引擎。旧 renderer 源码和浏览器数据保留，没有清空或偷偷导入另一套数据。
+
+MO State 管理入口位于侧栏 `/mo-state`：当前个人空间的状态快照、场景与五维约束、输入依据、规则版本、最近 20 次处理及实际注入审计；角色侧写缓存可查询/重置。运行配置继续在 `/settings/mo-state`。管理查询不会调用模型，旧记录缺少回复关联时明确显示注入未知，见 [0015](docs/decisions/0015-mo-state-management.md)。
 
 MOC 仅携带已修改的提示词空间，内置正文由 Core 提供；恢复默认后不再导出。MO State 页统一显示“闭环自治”和“状态投影”，版本对应关系放在说明中。模型参数页沿用原结构，按用户是否配置对应类型显示用途入口，撤销此前未确认的折叠布局提案。
 

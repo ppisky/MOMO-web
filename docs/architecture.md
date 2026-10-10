@@ -30,7 +30,7 @@ Core 保存角色、历史、记忆/NSG、提示词与运行策略。模型账�
 
 Web 的 api.assets 只校验宿主授权和表单，将完整内容、RecordPolicy 和 revision 一起交给 Core；不自己写资产文件。Core 区分个人 Space 与存储 Space。世界选项通过实际 MemoryIdentity 获取，不以对话 ID 猜共享世界。原目标对话消失后可保留绑定继续编辑，不能自动扩大注入范围。
 
-MO State 复用 runtime-settings 稀疏 PATCH、契约 CAS 和运行状态。MOC 路由只接受模块/空间/角色选择，由宿主生成临时路径、流式返回下载并清理文件；不接收浏览器指定的文件路径，不持久化密码。Core 保存/导出边界不复制到 UI。具体提交组合见 sources/runtime-combination.json。
+MO State 配置复用 runtime-settings 稀疏 PATCH、契约 CAS 和运行状态；独立管理页复用 Core 有界只读 management 和派生 DDM 查询/重置。宿主按个人空间及角色所有权白名单适配，浏览器校验 wire 后展示，不评估规则或维护第二套状态日志。实际注入来自原事务关联的已完成回复审计，旧记录不根据当前策略补猜。见 [0015](decisions/0015-mo-state-management.md)。MOC 路由只接受模块/空间/角色选择，由宿主生成临时路径、流式返回下载并清理文件；不接收浏览器指定的文件路径，不持久化密码。Core 保存/导出边界不复制到 UI。具体提交组合见 sources/runtime-combination.json。
 
 MOC 的快速分组只在 Web 选择层将范围映射到既有导出计划，细选与快速开关共用同一份选择，不新增后端导出协议。全局配置和空间配置仍按各自的实际归属导出。
 
