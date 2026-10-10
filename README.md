@@ -28,6 +28,8 @@ Core 拥有角色、会话、记忆和 NSG；Web 宿主保存空间目录和参�
 
 MOC 仅携带已修改的提示词空间，内置正文由 Core 提供；恢复默认后不再导出。MO State 页解释闭环自治与 V1 状态投影的实际职责。模型参数页沿用原结构，按用户是否配置对应类型显示用途入口，撤销此前未确认的折叠布局提案。
 
+新的后台用途请求配置要求已记录在 [0011](docs/decisions/0011-background-request-defaults.md)：默认由 Core 提供，满足模型条件后可主动点开 JSON 覆盖，并能恢复默认。此功能尚未实施，就地展开与弹窗的选择仍待确认；不能把当前仅选择用途模型的页面当作已完成该编辑能力。
+
 本轮落实范围见 [0008](docs/decisions/0008-editable-assets-state-export.md) 和 [0009](docs/decisions/0009-settings-and-portable-configuration.md)。角色简介/头像/背景等展示资产、NSG 治理候选审批、完整来源审计界面、对话归档/分支/篇章仍有缺口；不要把资产归档误认为对话归档。继续依据 [产品边界](docs/product-boundaries.md) 和 [计划](docs/roadmap.md) 实施。
 
 - [架构](docs/architecture.md) · [开发和验证](docs/development.md) · [验证记录](docs/validation.md)
