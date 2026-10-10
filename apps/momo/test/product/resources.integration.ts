@@ -150,13 +150,15 @@ try {
         model_id: 'fixture-chat',
         name: 'Fixture Chat',
         kind: 'chat',
-        context_window: 8192,
+        context_window: null,
         max_output_tokens: null,
       },
     ],
   });
   assert.equal(configured.status, 200, await configured.clone().text());
   const modelConfig = parseModels(await configured.json());
+  assert.equal(modelConfig.models[0]!.context_window, null);
+  assert.equal((await call(modelAction, 'models', { ...modelConfig, models:modelConfig.models.map((m) => ({ ...m,context_window:0 })) })).status, 400);
   assert.equal(JSON.stringify(modelConfig).includes('fixture-private-key'), false);
   assert.equal(modelConfig.providers[0]!.has_api_key, true);
   assert.equal(record(JSON.parse(readFileSync(hostAccountsPath, 'utf8'))).current !== undefined, true);
@@ -186,6 +188,7 @@ try {
       temperature: 0.4,
       topP: 0.8,
       maxOutput: 256,
+      parameters: { frequency_penalty: 0.2 },
     })),
   });
   assert.equal(savedParameters.status, 200, await savedParameters.clone().text());
@@ -224,6 +227,7 @@ try {
   assert.equal(foreground.body.model, 'fixture-chat');
   assert.equal(foreground.body.top_p, 0.8);
   assert.equal(foreground.body.max_tokens, 256);
+  assert.equal(foreground.body.frequency_penalty, 0.2);
   const count = requests.length;
   const replay = await call(chatAction, 'chat', {
     spaceId: space,

@@ -26,6 +26,7 @@ export function resolveParameters(current: Parameters, catalog?: Models): Resolv
           temperature: source.temperature,
           top_p: source.topP,
           max_output_tokens: source.maxOutput,
+          ...(source.parameters ? { parameters: source.parameters } : {}),
         },
       ];
     }),

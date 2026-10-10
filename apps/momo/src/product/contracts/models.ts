@@ -25,7 +25,7 @@ export type Model = {
   model_id: string;
   name: string;
   kind: (typeof modelKinds)[number]['value'];
-  context_window: number;
+  context_window: number | null;
   max_output_tokens: number | null;
   reference?: string;
 };
@@ -79,7 +79,7 @@ export function models(value: unknown, editing = false): Models {
     const kind = modelKinds.find((k) => k.value === m.kind)?.value;
     const name = text(m.name, 'name').trim(),
       model_id = text(m.model_id, 'model_id').trim();
-    const context_window = Number(m.context_window),
+    const context_window = m.context_window == null ? null : m.context_window,
       max_output_tokens = m.max_output_tokens === null ? null : Number(m.max_output_tokens);
     if (
       !kind ||
@@ -87,13 +87,14 @@ export function models(value: unknown, editing = false): Models {
       name.length > 200 ||
       !model_id ||
       model_id.length > 256 ||
-      !Number.isInteger(context_window) ||
-      context_window < 1024 ||
-      context_window > 16000000 ||
+      (context_window !== null &&
+        (typeof context_window !== 'number' || !Number.isInteger(context_window) ||
+        context_window < 1024 || context_window > 16000000)) ||
       (max_output_tokens !== null &&
         (!Number.isInteger(max_output_tokens) ||
           max_output_tokens < 1 ||
-          max_output_tokens >= context_window))
+          max_output_tokens >= 16000000 ||
+          (typeof context_window === 'number' && max_output_tokens >= context_window)))
     )
       throw Error('请检查模型 ID 和上下文长度');
     const provider_id = uuid(m.provider_id);
@@ -109,7 +110,7 @@ export function models(value: unknown, editing = false): Models {
       model_id,
       name,
       kind,
-      context_window,
+      context_window: context_window as number | null,
       max_output_tokens,
       ...(reference ? { reference } : {}),
     };

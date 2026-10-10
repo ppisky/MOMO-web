@@ -69,25 +69,51 @@ export class CoreClient {
   }
 
   async request(path: string, init: RequestInit = {}, timeoutMs = 30000): Promise<Response> {
-    const timeout = AbortSignal.timeout(timeoutMs);
-    const signal = init.signal ? AbortSignal.any([timeout, init.signal]) : timeout;
-    const headers = new Headers(init.headers);
-    headers.set('Content-Type', 'application/json');
-    const response = await this.transport(this.config.coreOrigin + path, {
-      ...init,
-      signal,
-      redirect: 'error',
-      headers,
-    });
-    if (!response.ok) {
-      let code = `http_${response.status}`;
-      try {
-        const error = record(record(await response.json()).error);
-        if (typeof error.code === 'string' && /^[a-zA-Z0-9_.-]{1,80}$/.test(error.code)) code = error.code;
-      } catch {}
-      throw new CoreError(response.status, code);
+    const timeout = AbortSignal.timeout(timeoutMs)
+    const signal = init.signal ? AbortSignal.any([timeout, init.signal]) : timeout
+    const headers = new Headers(init.headers)
+    headers.set('Content-Type', 'application/json')
+    let response: Response
+    try {
+      response = await this.transport(this.config.coreOrigin + path, { ...init, signal, redirect: 'error', headers })
+    } catch {
+      throw new CoreError(
+        503,
+        'core_unreachable',
+        signal.aborted
+          ? 'Core 请求超时或已取消，请检查运行状态。'
+          : '无法连接 Core，请检查 Core 是否启动及应用连接地址。'
+      )
     }
-    return response;
+    if (!response.ok) {
+      if (
+        (response.status === 404 || response.status === 405) &&
+        (path.startsWith('/v1/memory/identity-binding') || path === '/v1/memory/assets/configure')
+      )
+        throw new CoreError(
+          409,
+          'core_version_mismatch',
+          '当前运行的 Core 缺少资产配置接口，请切换到与网页配套的 Core 版本。'
+        )
+      if (response.status === 422) {
+        const diagnostic = await response.clone().text()
+        if (path === '/v1/semantic-graph/nodes/list' && diagnostic.includes('unknown field `include_archived`'))
+          throw new CoreError(
+            409,
+            'core_version_mismatch',
+            '当前运行的 Core 不支持含归档节点的语义网列表，请更新配套 Core。'
+          )
+        if (path === '/v1/model-configuration' && /invalid type: null.*expected (usize|u64)/s.test(diagnostic))
+          throw new CoreError(409, 'core_version_mismatch', '当前运行的 Core 尚不支持留空上下文长度，请更新配套 Core。')
+      }
+      let code = `http_${response.status}`
+      try {
+        const error = record(record(await response.json()).error)
+        if (typeof error.code === 'string' && /^[a-zA-Z0-9_.-]{1,80}$/.test(error.code)) code = error.code
+      } catch {}
+      throw new CoreError(response.status, code)
+    }
+    return response
   }
 
   async health() {

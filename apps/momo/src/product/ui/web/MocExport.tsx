@@ -3,10 +3,27 @@ import { Alert, Button, Checkbox, Divider, MultiSelect, PasswordInput, Select, S
 import { character, list, record, type Character } from '../../contracts/core'
 import { useProduct } from './context'
 import { api } from './api'
+import { useSettingsStore } from './store'
+import {
+  configurationCount,
+  globalConfigNames,
+  spaceConfigNames,
+  promptChoices,
+  type ConfigurationSelection,
+  type SpaceConfig,
+  type GlobalConfig,
+} from '../../contracts/moc'
 const moduleNames = { conversations: '对话（包含消息历史）', memory: '记忆', semantic_graph: '语义网' } as const
 type Module = keyof typeof moduleNames
 export function MocExport() {
   const { data } = useProduct()
+  const preferences = useSettingsStore((s) => s)
+  const [configuration, setConfiguration] = useState<ConfigurationSelection>({
+    global: [],
+    prompts: [],
+    personal_spaces: [],
+    spaces: {},
+  })
   const [characterSpaces, setCharacterSpaces] = useState<string[]>([]),
     [allRoles, setAllRoles] = useState(true),
     [selectedRoles, setSelectedRoles] = useState<string[]>([]),
@@ -41,13 +58,16 @@ export function MocExport() {
       })
     return () => abort.abort()
   }, [characterSpaces])
-  const selected = characterSpaces.length + Object.values(scopes).reduce((sum, v) => sum + v.length, 0)
+  const selected =
+    characterSpaces.length +
+    Object.values(scopes).reduce((sum, v) => sum + v.length, 0) +
+    configurationCount(configuration)
   async function download() {
     setBusy(true)
     setError('')
     setNotice('')
     try {
-      if (encrypted && (!password || password !== confirm)) throw Error('请填写一致的加密口令')
+      if (encrypted && (!password || password !== confirm)) throw Error('请填写一致的加密密码')
       const selections = characterSpaces.map((space_id) => ({
         space_id,
         character_ids: allRoles
@@ -62,6 +82,10 @@ export function MocExport() {
         body: JSON.stringify({
           plan: { characters: selections, ...scopes, compatibility: selections.length ? compatibility : 'none' },
           protection: encrypted ? { type: 'passphrase', value: password } : { type: 'none' },
+          configuration,
+          ...(configuration.global.includes('preferences')
+            ? { preferences: Object.fromEntries(Object.entries(preferences).filter(([key]) => key !== 'setSettings')) }
+            : {}),
         }),
       })
       if (!response.ok) {
@@ -88,12 +112,12 @@ export function MocExport() {
     <Stack p="md" gap="lg" maw={800}>
       <Title order={5}>导出 MOC</Title>
       <Text size="sm" c="dimmed">
-        按模块选择导出范围。角色可以精确选择；对话、记忆与语义网分别按空间导出，彼此独立。
+        选择业务资产与配置组件。角色可以精确选择；对话、记忆与语义网按个人空间导出，配置独立勾选。
       </Text>
       {error && <Alert color="red">{error}</Alert>}
       {notice && <Alert color="green">{notice}</Alert>}
       <MultiSelect
-        label="角色所在空间"
+        label="角色所在个人空间"
         placeholder="不导出角色"
         data={choices}
         value={characterSpaces}
@@ -103,7 +127,7 @@ export function MocExport() {
       {!!characterSpaces.length && (
         <>
           <Checkbox
-            label="导出选中空间的全部角色"
+            label="导出选中个人空间的全部角色"
             checked={allRoles}
             onChange={(e) => setAllRoles(e.currentTarget.checked)}
             disabled={busy}
@@ -150,12 +174,59 @@ export function MocExport() {
           disabled={busy}
         />
       ))}
+      <Divider label="应用配置" />
+      {(Object.entries(globalConfigNames) as [GlobalConfig, string][]).map(([key, label]) => (
+        <Checkbox
+          key={key}
+          label={label}
+          checked={configuration.global.includes(key)}
+          disabled={busy}
+          onChange={(e) =>
+            setConfiguration({
+              ...configuration,
+              global: e.currentTarget.checked
+                ? [...configuration.global, key]
+                : configuration.global.filter((v) => v !== key),
+            })
+          }
+        />
+      ))}
+      <MultiSelect
+        label="个人空间目录"
+        placeholder="不导出目录"
+        data={choices}
+        value={configuration.personal_spaces}
+        disabled={busy}
+        onChange={(personal_spaces) => setConfiguration({ ...configuration, personal_spaces })}
+      />
+      <MultiSelect
+        label="提示词空间"
+        placeholder="选择要导出的提示词"
+        data={Object.entries(promptChoices).map(([value, label]) => ({ value, label }))}
+        value={configuration.prompts}
+        disabled={busy}
+        onChange={(prompts) => setConfiguration({ ...configuration, prompts })}
+      />
+      <Divider label="各个人空间的配置" />
+      {(Object.entries(spaceConfigNames) as [SpaceConfig, string][]).map(([key, label]) => (
+        <MultiSelect
+          key={key}
+          label={label}
+          data={choices}
+          placeholder={`不导出${label}`}
+          value={configuration.spaces[key] ?? []}
+          disabled={busy}
+          onChange={(value) =>
+            setConfiguration({ ...configuration, spaces: { ...configuration.spaces, [key]: value } })
+          }
+        />
+      ))}
       <Text size="xs" c="dimmed">
-        API 密钥、模型服务商凭据、运行策略和提示词设置不在此导出范围内。
+        配置以 MOC 扩展模块保存。服务商密钥不导出；界面偏好不包含本机图片文件。这里只导出配置快照，导入恢复由应用处理。
       </Text>
       <Divider label="文件保护" />
       <Checkbox
-        label="使用口令加密 MOC"
+        label="使用密码加密 MOC"
         checked={encrypted}
         onChange={(e) => setEncrypted(e.currentTarget.checked)}
         disabled={busy}
@@ -163,21 +234,21 @@ export function MocExport() {
       {encrypted && (
         <>
           <PasswordInput
-            label="加密口令"
+            label="加密密码"
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.currentTarget.value)}
             disabled={busy}
           />
           <PasswordInput
-            label="确认口令"
+            label="确认密码"
             autoComplete="new-password"
             value={confirm}
             onChange={(e) => setConfirm(e.currentTarget.value)}
             disabled={busy}
           />
           <Text size="xs" c="dimmed">
-            口令不会保存在应用设置中，导入时需要此口令。
+            密码不会保存在应用设置中，导入时需要此密码。
           </Text>
         </>
       )}
@@ -195,6 +266,24 @@ export function MocExport() {
             {label}：{scopes[key].map((id) => choices.find((s) => s.value === id)?.label).join('、') || '不导出'}
           </Text>
         ))}
+        <Text size="sm">
+          应用配置：{configuration.global.map((key) => globalConfigNames[key]).join('、') || '不导出'}
+        </Text>
+        <Text size="sm">
+          个人空间目录：
+          {configuration.personal_spaces.map((id) => choices.find((s) => s.value === id)?.label).join('、') || '不导出'}
+        </Text>
+        <Text size="sm">
+          提示词：
+          {configuration.prompts.map((id) => promptChoices[id as keyof typeof promptChoices]).join('、') || '不导出'}
+        </Text>
+        {(Object.entries(spaceConfigNames) as [SpaceConfig, string][])
+          .filter(([key]) => configuration.spaces[key]?.length)
+          .map(([key, label]) => (
+            <Text size="sm" key={key}>
+              {label}：{configuration.spaces[key]?.map((id) => choices.find((s) => s.value === id)?.label).join('、')}
+            </Text>
+          ))}
       </Alert>
       <Button
         loading={busy}

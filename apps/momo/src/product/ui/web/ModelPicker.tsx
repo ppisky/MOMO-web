@@ -58,7 +58,7 @@ export function ModelPicker() {
           onClick={() => setOpened((v) => !v)}
         >
           <Text size="sm" c="chatbox-secondary" truncate maw={200}>
-            {model?.name ?? (group?.modelId ? '模型不可用' : '选择模型')}
+            {model?.name ?? (group?.modelId ? '模型不可用' : '请选择对话或多模态模型')}
           </Text>
           <IconChevronDown size={14} />
         </UnstyledButton>
@@ -84,7 +84,7 @@ export function ModelPicker() {
                 allowDeselect={false}
                 disabled={busy}
                 value={group.modelId ?? null}
-                placeholder="请选择对话或视觉模型"
+                placeholder="请选择对话或多模态模型"
                 nothingFoundMessage="请先在服务商中添加模型"
                 data={[
                   ...(catalog?.models

@@ -6,11 +6,14 @@ import { record, list, text, uuid } from '../contracts/core'
 import { actionInput, actionError, core } from '../lib/server/actions.server'
 import { spacesHost } from '../lib/server/spaces.server'
 import { CoreError } from '../lib/server/core.server'
+import { configurationSelection, configurationCount } from '../contracts/moc'
+import { exportConfiguration } from '../lib/server/moc-config.server'
 export async function action({ request }: ActionFunctionArgs) {
   let directory: string | undefined
   try {
     const input = await actionInput(request)
     const raw = record(input.plan)
+    const configuration = configurationSelection(input.configuration)
     const allowed = ['characters', 'conversations', 'memory', 'semantic_graph', 'compatibility']
     if (Object.keys(raw).some((k) => !allowed.includes(k))) throw Error('Invalid export scope')
     const space = (v: unknown) => {
@@ -40,7 +43,10 @@ export async function action({ request }: ActionFunctionArgs) {
       )
     )
       throw Error('Invalid compatibility')
-    if (![plan.characters, plan.conversations, plan.memory, plan.semantic_graph].some((v) => v.length))
+    if (
+      ![plan.characters, plan.conversations, plan.memory, plan.semantic_graph].some((v) => v.length) &&
+      !configurationCount(configuration)
+    )
       throw new CoreError(400, 'empty_export')
     const protection = record(input.protection)
     if (protection.type !== 'none' && protection.type !== 'passphrase') throw Error('Invalid protection')
@@ -48,6 +54,7 @@ export async function action({ request }: ActionFunctionArgs) {
     if (protection.type === 'passphrase' && (!password.length || password.length > 1024))
       throw new CoreError(400, 'invalid_passphrase')
     directory = await mkdtemp(join(tmpdir(), 'momo-web-export-'))
+    const hostModules = await exportConfiguration(directory, configuration, input.preferences)
     const path = join(directory, 'export.moc')
     await core().request(
       '/v1/moc/export',
@@ -57,7 +64,7 @@ export async function action({ request }: ActionFunctionArgs) {
           output_path: path,
           plan,
           protection: password ? { type: 'passphrase', value: password } : { type: 'none' },
-          host_modules: [],
+          host_modules: hostModules,
         }),
       },
       120000

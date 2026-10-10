@@ -24,3 +24,5 @@
 锁文件中的 electron-to-chromium 是 Browserslist 的浏览器版本映射数据，不含 Electron 二进制或桌面运行时。实际依赖边界和生产构建均另行检查。
 
 0008 将网页配置对齐 Core，并通过独立上游提交补通用缺口。当前 Core revision 为 60ae97aff99398b835311c716759d59d06dbce67，组合见 docs/sources/runtime-combination.json。core-ui-restoration.json 保留迁入当时的来源哈希与历史 Core revision，不再代表当前运行依赖。
+
+2026-10-09 设置增补：独立 Core revision c44f5ffee737f5915f9baae20b49a33717eaced1 支持未声明上下文长度与受策略管理的路由 JSON 参数。Web 配置 MOC 导出复用已有宿主扩展，未改变 Core 模块所有权。原冻结来源清单仍为历史记录。

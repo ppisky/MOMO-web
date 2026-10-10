@@ -22,6 +22,8 @@ import { api } from './api';
 import { addToast } from './media';
 import { useSettingsStore } from './store';
 import { useTranslation } from 'react-i18next';
+import { MemorySettings } from './MemorySettings';
+import { RequestParameterJson } from './RequestParameterJson';
 
 export function useResource(kind: string) {
   const { data } = useProduct();
@@ -43,7 +45,7 @@ export function useResource(kind: string) {
 }
 const promptNames: Record<string, string> = {
   assistant: '通用助手',
-  vision_fallback: '视觉描述',
+  vision_fallback: '视觉回退提示词',
   roleplay_director: '角色导演',
   memory_distillation: '记忆提取',
   semantic_graph_governance: '语义网维护',
@@ -130,6 +132,9 @@ export function PromptSettings() {
   );
 }
 export function RuntimeSettings({ section = 'memory' }: { section?: 'memory' | 'history' }) {
+  return section === 'memory' ? <MemorySettings /> : <RuntimeSection section="history" />;
+}
+function RuntimeSection({ section }: { section: 'memory' | 'history' }) {
   const { data } = useProduct();
   const { value, error, reload } = useResource('runtime');
   const [busy, setBusy] = useState(false);
@@ -167,7 +172,7 @@ export function RuntimeSettings({ section = 'memory' }: { section?: 'memory' | '
       });
       setDraft(null);
       reload();
-      addToast(reset ? '已恢复继承默认策略' : '当前空间策略已保存');
+      addToast(reset ? '已恢复继承默认策略' : '当前个人空间策略已保存');
     } catch (e) {
       setFailure(e instanceof Error ? e.message : '保存失败');
     } finally {
@@ -247,7 +252,7 @@ export function RuntimeSettings({ section = 'memory' }: { section?: 'memory' | '
             }}
           />
           <Text size="xs" c="chatbox-tertiary">
-            仅调整当前空间。关闭自动提取不会删除已有资产。
+            仅调整当前个人空间。关闭自动提取不会删除已有资产。
           </Text>
         </>
       )}
@@ -262,7 +267,7 @@ export function RuntimeSettings({ section = 'memory' }: { section?: 'memory' | '
     </Stack>
   );
 }
-function ModelParameterPolicy() {
+function ModelParameterPolicy({ extraNames }: { extraNames: string[] }) {
   const { data } = useProduct();
   const { value, error, reload } = useResource('runtime');
   const [busy, setBusy] = useState(false);
@@ -284,7 +289,7 @@ function ModelParameterPolicy() {
     try {
       await api('/api/resources', {
         spaceId: selectedSpace, command: 'runtime-save', revision: policy.revision,
-        patch: enableParameterPolicy(policy),
+        patch: enableParameterPolicy(policy, extraNames),
       });
       reload();
     } catch (e) {
@@ -293,17 +298,17 @@ function ModelParameterPolicy() {
     } finally { setBusy(false); }
   }
   if (error || invalid) return <Alert color="red">{error || invalid}</Alert>;
-  if (!policy) return <Text size="xs" c="dimmed">正在读取当前空间的参数策略…</Text>;
-  const accepts = policy.sampling === 'allow' && policy.maxOutput === 'allow' && policy.allowedParameters.includes('top_p');
+  if (!policy) return <Text size="xs" c="dimmed">正在读取当前个人空间的参数策略…</Text>;
+  const accepts = policy.sampling === 'allow' && policy.maxOutput === 'allow' && ['top_p', ...extraNames].every((key) => policy.allowedParameters.includes(key));
   return (
     <Stack gap="xs">
       {failure && <Alert color="red">{failure}</Alert>}
-      {accepts ? <Text size="xs" c="dimmed">当前空间允许使用模型参数；保存参数组不会更改空间策略。</Text> : (
-        <Alert color="yellow" title="当前空间限制了部分模型参数">
+      {accepts ? <Text size="xs" c="dimmed">当前个人空间允许使用模型参数；保存参数组不会更改空间策略。</Text> : (
+        <Alert color="yellow" title="当前个人空间限制了部分模型参数">
           <Stack gap="xs">
-            <Text size="sm">参数组可以保存。启用后，本空间的后续请求可使用温度、Top P 和最大输出；其他空间不变。</Text>
+            <Text size="sm">参数组可以保存。启用后，当前个人空间允许温度、Top P、最大输出{extraNames.length ? `及 JSON 参数：${extraNames.join('、')}` : ''}。</Text>
             <Button size="xs" variant="light" loading={busy} onClick={() => void enable()} style={{ alignSelf: 'flex-start' }}>
-              允许当前空间使用模型参数
+              允许当前个人空间使用模型参数
             </Button>
           </Stack>
         </Alert>
@@ -320,6 +325,7 @@ export function ModelParameters() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const settings = useSettingsStore((s) => s);
+  const [jsonError, setJsonError] = useState('');
   useEffect(() => {
     void api('/api/models')
       .then((v) => setCatalog(models(v)))
@@ -356,7 +362,7 @@ export function ModelParameters() {
         参数配置用于后续请求，角色和对话不保存参数副本。留空跟随模型默认值。
       </Text>
       {error && <Alert color="red">{error}</Alert>}
-      <ModelParameterPolicy key={data.spaceId} />
+      <ModelParameterPolicy key={data.spaceId} extraNames={[...new Set(config?.groups.flatMap((g) => Object.keys(g.parameters ?? {})) ?? [])]} />
       {config && current && (
         <>
           <Flex gap="xs" align="flex-end">
@@ -396,7 +402,7 @@ export function ModelParameters() {
             searchable
             allowDeselect={false}
             value={current.modelId ?? null}
-            placeholder="请选择对话或视觉模型"
+            placeholder="请选择对话或多模态模型"
             nothingFoundMessage="请先在服务商中添加模型"
             data={[
               ...(catalog?.models
@@ -455,6 +461,7 @@ export function ModelParameters() {
             checked={settings.stream}
             onChange={(e) => settings.setSettings({ stream: e.currentTarget.checked })}
           />
+          <RequestParameterJson key={current.id} group={current} onChange={(value) => patch(value)} onError={setJsonError} />
           <Title order={6}>功能模型</Title>
           <Text size="sm" c="dimmed">
             未单独指定时，使用当前对话的模型和参数。向量化模型不参与生成。
@@ -499,7 +506,7 @@ export function ModelParameters() {
             >
               删除参数组
             </Button>
-            <Button loading={busy} onClick={() => void save()}>
+            <Button loading={busy} disabled={!!jsonError} onClick={() => void save()}>
               {t('Save')}
             </Button>
           </Flex>

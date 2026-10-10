@@ -116,7 +116,7 @@ export function ProviderSettings() {
       model_id,
       name,
       kind: 'chat',
-      context_window: 8192,
+      context_window: null,
       max_output_tokens: null,
     });
   }
@@ -331,11 +331,13 @@ export function ProviderSettings() {
             />
             <NumberInput
               label="上下文长度"
+              description="可留空，表示未声明。填写时必须为正整数，不能为 0。"
               min={1024}
               max={16000000}
               allowDecimal={false}
-              value={editing.context_window}
-              onChange={(v) => setEditing({ ...editing, context_window: Number(v) })}
+              value={editing.context_window ?? ''}
+              placeholder="未设置"
+              onChange={(v) => setEditing({ ...editing, context_window: typeof v === 'number' ? v : null })}
             />
             <NumberInput
               label="模型输出上限"

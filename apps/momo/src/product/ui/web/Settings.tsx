@@ -40,7 +40,7 @@ export function Settings({
     ['memory', '记忆与语义网', IconBrain],
     ['mo-state', 'MO State', IconActivity],
     ['moc', '导出 MOC', IconDownload],
-    ['spaces', '空间', IconLayoutGrid],
+    ['spaces', '个人空间', IconLayoutGrid],
     ['general', 'General Settings', IconAdjustments],
   ] as const;
   return (

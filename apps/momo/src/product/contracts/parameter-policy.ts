@@ -21,12 +21,12 @@ export function parameterPolicy(value: unknown) {
   };
 }
 
-export function enableParameterPolicy(value: ReturnType<typeof parameterPolicy>) {
+export function enableParameterPolicy(value: ReturnType<typeof parameterPolicy>, extraNames: string[] = []) {
   return {
     request_overrides: {
       sampling: 'allow',
       max_output_tokens: 'allow',
-      allowed_parameters: [...new Set([...value.allowedParameters, 'top_p'])],
+      allowed_parameters: [...new Set([...value.allowedParameters, 'top_p', ...extraNames])],
     },
   };
 }

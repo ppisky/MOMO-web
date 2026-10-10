@@ -92,3 +92,16 @@ test('host configuration requires loopback origin and explicit valid Space IDs',
     }
   } finally { delete host.__MOMO_HOST_CONFIG; }
 });
+
+
+test('missing Core capabilities report version mismatch without silently dropping archived assets', async () => {
+  const missing = new CoreClient(config, async () => new Response('', { status: 405 }));
+  await assert.rejects(() => missing.request('/v1/memory/identity-binding?space_id='+space),
+    (error: unknown) => error instanceof CoreError && error.code === 'core_version_mismatch');
+  const old = new CoreClient(config, async () => new Response('unknown field `include_archived`', { status: 422 }));
+  await assert.rejects(() => old.request('/v1/semantic-graph/nodes/list'),
+    (error: unknown) => error instanceof CoreError && error.code === 'core_version_mismatch');
+  const offline = new CoreClient(config, async () => { throw new TypeError('fetch failed'); });
+  await assert.rejects(() => offline.request('/health'),
+    (error: unknown) => error instanceof CoreError && error.code === 'core_unreachable');
+});

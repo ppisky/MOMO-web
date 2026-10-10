@@ -13,7 +13,7 @@ export class SqliteSpaceStorage implements SpaceStorage {
   constructor(path: string, firstId: string = randomUUID()) {
     this.database = new DatabaseSync(path);
     this.database.exec('PRAGMA busy_timeout=5000; PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS app_spaces(id INTEGER PRIMARY KEY CHECK(id=1), revision INTEGER NOT NULL, value TEXT NOT NULL)');
-    const first: SpaceDirectory = { revision: 0, spaces: [{ id: firstId, name: '默认空间' }], currentId: firstId, pending: null };
+    const first: SpaceDirectory = { revision: 0, spaces: [{ id: firstId, name: '默认个人空间' }], currentId: firstId, pending: null };
     this.database.prepare('INSERT OR IGNORE INTO app_spaces VALUES(1,0,?)').run(JSON.stringify(first));
   }
   read() {

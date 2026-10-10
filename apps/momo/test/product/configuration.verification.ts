@@ -338,6 +338,33 @@ export async function verifyConfiguration({
     ).status,
     400
   )
+  const configurationOnly = await call('moc', {
+    plan: { characters:[],conversations:[],memory:[],semantic_graph:[],compatibility:'none' },
+    protection:{ type:'none' },
+    configuration:{ global:['models','parameters','preferences'],personal_spaces:[space],prompts:['assistant'],
+      spaces:{ history_window:[space],request_overrides:[space],runtime:[space],memory_lifecycle:[space],mo_state:[space],state_contract:[space],roleplay:[space],vision:[space] } },
+    preferences:{ language:'zh-Hans',stream:true,showAvatar:false,userAvatarKey:'local-reference-not-portable' },
+  });
+  assert.equal(configurationOnly.status,200,await configurationOnly.clone().text());
+  const configurationTar=zstdDecompressSync(Buffer.from(await configurationOnly.arrayBuffer())).toString();
+  for (const module of ['models','parameters','preferences','personal-spaces','prompts','history-window','request-overrides','runtime','memory-lifecycle','mo-state','state-contract','roleplay','vision'])
+    assert.ok(configurationTar.includes('momo-web-'+module),module);
+  assert.ok(configurationTar.includes('frequency_penalty'));
+  assert.ok(configurationTar.includes('"context_window": null'));
+  assert.ok(configurationTar.includes('"stream": true'));
+  assert.ok(!configurationTar.includes('fixture-private-key'));
+  assert.ok(!configurationTar.includes('local-reference-not-portable'));
+  assert.ok(!configurationTar.includes(other));
+  assert.ok(!configurationTar.includes('User changed'));
+  const protectedConfiguration=await call('moc',{
+    plan:{ characters:[],conversations:[],memory:[],semantic_graph:[],compatibility:'none' },
+    protection:{ type:'passphrase',value:'configuration-only-password' },
+    configuration:{ global:['preferences'],prompts:[],personal_spaces:[],spaces:{} }, preferences:{ language:'zh-Hans' },
+  });
+  assert.equal(protectedConfiguration.status,200,await protectedConfiguration.clone().text());
+  const protectedTar=zstdDecompressSync(Buffer.from(await protectedConfiguration.arrayBuffer())).toString();
+  assert.ok(!protectedTar.includes('momo-web-preferences'));
+  assert.ok(!protectedTar.includes('configuration-only-password'));
   console.log(
     'PASS: full role/opening; atomic memory and NSG editing/archive/CAS; MO State settings/contract; scoped and encrypted MOC downloads'
   )

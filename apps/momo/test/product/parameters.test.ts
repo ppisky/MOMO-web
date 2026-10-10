@@ -3,10 +3,22 @@ import { test } from 'node:test';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { parameters, requestParameters } from '../../src/product/contracts/parameters';
+import { parameters, requestParameters, groupFromJson, parameterJson } from '../../src/product/contracts/parameters';
 import { readParameters, saveParameters, parametersForRequest } from '../../src/product/lib/server/parameters.server';
 const id = '01900000-0000-7000-8000-000000000001';
 const group = { id, name: '默认', temperature: null, topP: null, maxOutput: null };
+test('JSON edits share form fields, reject protocol control and preserve extra parameters across snapshots', () => {
+  const updated = groupFromJson(group, { temperature: 0.4, top_p: 0.8, frequency_penalty: 0.2 });
+  assert.equal(updated.temperature, 0.4);
+  assert.equal(updated.maxOutput, null);
+  assert.deepEqual(parameterJson(updated), { frequency_penalty: 0.2, temperature: 0.4, top_p: 0.8 });
+  assert.deepEqual(requestParameters(updated), { temperature: 0.4, parameters: { frequency_penalty: 0.2, top_p: 0.8 } });
+  assert.equal(groupFromJson(updated, {}).temperature, null);
+  for (const field of ['model','messages','stream','api_key','tools'])
+    assert.throws(() => groupFromJson(group, { [field]: 'invalid' }));
+  assert.throws(() => groupFromJson(group, { max_output_tokens: 0 }));
+  assert.throws(() => groupFromJson(group, { frequency_penalty: Number.NaN }));
+});
 test('blank parameters are omitted; explicit zero sampling is preserved; output zero is rejected', () => {
   assert.deepEqual(requestParameters(group), {});
   assert.deepEqual(requestParameters({ ...group, temperature: 0, topP: 0, maxOutput: 256 }), {

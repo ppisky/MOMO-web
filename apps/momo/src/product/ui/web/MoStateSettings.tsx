@@ -32,7 +32,6 @@ export function MoStateSettings() {
   const root = runtime.value ? record(runtime.value) : null
   const current = root ? record(record(root.settings).mo_state) : null
   const fields = draft ?? current
-  const lifecycle = fields ? record(fields.memory_lifecycle) : null
   const resource = contract.value ? record(contract.value) : null
   const state = status.value ? record(status.value) : null
   const snapshot = state?.current_snapshot ? record(state.current_snapshot) : null
@@ -55,7 +54,16 @@ export function MoStateSettings() {
           spaceId: data.spaceId,
           command: 'runtime-save',
           revision: root?.revision,
-          patch: { mo_state: kind === 'inherit' ? null : changedFields(current ?? {}, fields ?? {}) },
+          patch: {
+            mo_state:
+              kind === 'inherit'
+                ? Object.fromEntries(
+                    Object.keys(current ?? {})
+                      .filter((key) => key !== 'memory_lifecycle')
+                      .map((key) => [key, null])
+                  )
+                : changedFields(current ?? {}, fields ?? {}),
+          },
         })
         setDraft(null)
         runtime.reload()
@@ -79,15 +87,15 @@ export function MoStateSettings() {
   }
   return (
     <Stack p="md" gap="lg" maw={800}>
-      <Title order={5}>MO State（MS）</Title>
+      <Title order={5}>MO State</Title>
       <Text size="sm" c="dimmed">
-        协调当前场景、记忆与语义网，生成参与对话的状态上下文。配置作用于当前空间。
+        协调当前场景、记忆与语义网，生成参与对话的状态上下文。配置作用于当前个人空间。
       </Text>
       {(failure || runtime.error || contract.error || status.error) && (
         <Alert color="red">{failure || runtime.error || contract.error || status.error}</Alert>
       )}
       {notice && <Alert color="green">{notice}</Alert>}
-      {fields && lifecycle ? (
+      {fields ? (
         <>
           <Select
             label="状态配置档"
@@ -141,60 +149,13 @@ export function MoStateSettings() {
               />
             ))}
           </Flex>
-          <Divider label="记忆生命周期" />
-          <Text size="xs" c="dimmed">
-            按相关对话的活动轮数计算；不是经过的自然时间。
-          </Text>
-          <Switch
-            label="记忆衰减"
-            checked={lifecycle.enabled === true}
-            onChange={(e) => update('memory_lifecycle', { ...lifecycle, enabled: e.currentTarget.checked })}
-          />
-          <Flex gap="sm">
-            <NumberInput
-              flex={1}
-              label="衰减间隔（轮）"
-              min={1}
-              max={1000000}
-              value={Number(lifecycle.decay_after_turns)}
-              onChange={(v) => {
-                if (typeof v === 'number') update('memory_lifecycle', { ...lifecycle, decay_after_turns: v })
-              }}
-            />
-            <NumberInput
-              flex={1}
-              label="衰减系数"
-              min={0.01}
-              max={0.99}
-              step={0.05}
-              value={Number(lifecycle.decay_factor)}
-              onChange={(v) => {
-                if (typeof v === 'number') update('memory_lifecycle', { ...lifecycle, decay_factor: v })
-              }}
-            />
-          </Flex>
-          <Switch
-            label="自动遗忘"
-            description="达到遗忘条件后由 Core 移除已归档记忆；需要长期保留时可关闭。"
-            checked={lifecycle.auto_forget === true}
-            onChange={(e) => update('memory_lifecycle', { ...lifecycle, auto_forget: e.currentTarget.checked })}
-          />
-          <NumberInput
-            label="遗忘间隔（轮）"
-            min={1}
-            max={1000000}
-            value={Number(lifecycle.forget_after_turns)}
-            onChange={(v) => {
-              if (typeof v === 'number') update('memory_lifecycle', { ...lifecycle, forget_after_turns: v })
-            }}
-          />
           <Text size="xs" c="dimmed">
             配置修订：{String(root?.revision)} ·{' '}
             {root?.sources &&
             Object.entries(record(root.sources)).some(
               ([key, source]) => key.startsWith('mo_state.') && source === 'space_override'
             )
-              ? '包含当前空间覆盖'
+              ? '包含当前个人空间覆盖'
               : '继承实例默认设置'}
           </Text>
           <Flex gap="sm">

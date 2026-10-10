@@ -1,13 +1,13 @@
 {
-  "webBaseline": "669f057",
-  "coreRevision": "60ae97aff99398b835311c716759d59d06dbce67",
+  "webBaseline": "bf5274c",
+  "coreRevision": "c44f5ffee737f5915f9baae20b49a33717eaced1",
   "coreSource": "MOMO-core independent repository, codex/space-lifecycle worktree",
-  "previousCoreRevision": "32c2088d96b93d2d985950c5898fbe556f373d24",
+  "previousCoreRevision": "60ae97aff99398b835311c716759d59d06dbce67",
   "rust": "1.99.0",
   "pnpm": "10.33.0",
   "node": "26.11.1",
-  "verified": "2026-10-09",
-  "scope": "Full Core character configuration, atomic asset editing, MO State settings, scoped MOC export",
+  "verified": "2026-10-10",
+  "scope": "Optional model context, governed JSON request parameters, memory lifecycle configuration, component-scoped MOC configuration export, unique general prompt editor and existing-data daily services",
   "appChanged": false,
   "ronChanged": false
 }
