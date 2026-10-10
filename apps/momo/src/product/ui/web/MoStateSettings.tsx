@@ -98,11 +98,11 @@ export function MoStateSettings() {
       {fields ? (
         <>
           <Select
-            label="状态配置档"
-            description={fields.profile === 'v1_projection' ? '将记忆、语义网与场景/人物信号投影为状态上下文；V1 是 Core 的投影版本，不启用闭环维护与持久快照管理。' : '恢复到期维护，记录状态事件与版本并保存快照，再将状态用于对话；不会保证模型回复始终逻辑自洽。'}
+            label="运行模式"
+            description={fields.profile === 'v1_projection' ? '使用 Core V1 投影器，将记忆、语义网与场景/人物信号投影为状态上下文；不启用闭环维护与持久快照管理。' : '使用 Core V2 自治运行时，恢复到期维护、记录状态事件与版本并保存快照，再将状态用于对话；不会保证模型回复始终逻辑自洽。'}
             data={[
               { value: 'closed_autonomous', label: '闭环自治' },
-              { value: 'v1_projection', label: 'V1 状态投影' },
+              { value: 'v1_projection', label: '状态投影' },
             ]}
             value={String(fields.profile)}
             onChange={(v) => update('profile', v)}

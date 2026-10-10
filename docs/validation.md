@@ -1,3 +1,13 @@
+# MO State 运行模式命名验证
+
+2026-10-11。Web 基线 8955a86bd5e3bd21fdebd34de60df7a5343cb811，依据 [0009 补充](decisions/0009-settings-and-portable-configuration.md#2026-10-11mo-state-运行模式命名) 仅统一文案。Core 保持 cfe22234d819d3c620a360ee787604d0479c49bf，App、ron 未修改。
+
+- 严格类型检查、正式网页/宿主构建和 `git diff --check` 通过；保留既有 Tailwind/chunk 构建提示。仅改显示名称和说明，不新增镜像文案测试，不修改枚举、默认策略或请求。
+- 日常 1212 实际浏览器确认字段为“运行模式”，下拉两个选项为“闭环自治”和“状态投影”；当前自治说明显示 Core V2。未保存或修改个人空间配置，控制台无 warn/error。截图在忽略目录 .cache/mo-state-names-20261011.png，临时验证标签页已关闭。
+- Core 已有运行状态、状态契约与派生 DDM profile 的查询/重置接口；网页目前接入配置、最近快照/降级信息和契约，完整管理界面尚未实现。本轮不将自治解释成无须提供管理与诊断入口。
+
+---
+
 # 对话归档与标准协议名称验证
 
 2026-10-11。Web 基线 641dfd94d220f3aaed033c5bd7a2e60ac4a255cb，Core main cfe22234d819d3c620a360ee787604d0479c49bf。按 [0014](decisions/0014-conversation-archive.md) 实施；App、ron 未修改。
