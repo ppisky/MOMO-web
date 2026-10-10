@@ -24,6 +24,7 @@ import { useSettingsStore } from './store';
 import { useTranslation } from 'react-i18next';
 import { MemorySettings } from './MemorySettings';
 import { RequestParameterJson } from './RequestParameterJson';
+import { PurposeRequestJson } from './PurposeRequestJson';
 
 export function useResource(kind: string) {
   const { data } = useProduct();
@@ -291,6 +292,7 @@ function ModelParameterPolicy({ extraNames }: { extraNames: string[] }) {
         spaceId: selectedSpace, command: 'runtime-save', revision: policy.revision,
         patch: enableParameterPolicy(policy, extraNames),
       });
+      window.dispatchEvent(new Event('momo-parameter-policy-changed'));
       reload();
     } catch (e) {
       setFailure(e instanceof Error ? e.message : '策略更新失败');
@@ -326,6 +328,7 @@ export function ModelParameters() {
   const [busy, setBusy] = useState(false);
   const settings = useSettingsStore((s) => s);
   const [jsonError, setJsonError] = useState('');
+  const [purposeErrors, setPurposeErrors] = useState<Record<string, string>>({});
   useEffect(() => {
     void api('/api/models')
       .then((v) => setCatalog(models(v)))
@@ -346,7 +349,7 @@ export function ModelParameters() {
     setBusy(true);
     setError('');
     try {
-      setConfig(parameters(await api('/api/parameters', config)));
+      setConfig(parameters(await api('/api/parameters', { ...config, spaceId: data.spaceId })));
       window.dispatchEvent(new Event('momo-models-changed'));
       addToast('模型配置已保存，后续请求按所在空间策略应用');
     } catch (e) {
@@ -362,7 +365,10 @@ export function ModelParameters() {
         参数配置用于后续请求，角色和对话不保存参数副本。留空跟随模型默认值。
       </Text>
       {error && <Alert color="red">{error}</Alert>}
-      <ModelParameterPolicy key={data.spaceId} extraNames={[...new Set(config?.groups.flatMap((g) => Object.keys(g.parameters ?? {})) ?? [])]} />
+      <ModelParameterPolicy key={data.spaceId} extraNames={[...new Set([
+        ...(config?.groups.flatMap((g) => Object.keys(g.parameters ?? {})) ?? []),
+        ...Object.values(config?.purposeParameters ?? {}).flatMap((p) => Object.keys(p ?? {}).filter((key) => !['temperature', 'max_output_tokens'].includes(key))),
+      ])]} />
       {config && current && (
         <>
           <Flex gap="xs" align="flex-end">
@@ -478,8 +484,8 @@ export function ModelParameters() {
           {(Object.entries(purposeNames) as [ModelPurpose, string][])
             .filter(([purpose]) => modelsForPurpose(catalog, purpose).length > 0)
             .map(([purpose, label]) => (
+              <React.Fragment key={purpose}>
               <Select
-                key={purpose}
                 label={label}
                 allowDeselect={false}
                 value={
@@ -508,6 +514,19 @@ export function ModelParameters() {
                   })
                 }
               />
+              <PurposeRequestJson
+                key={`${purpose}-${config.purposes?.[purpose] ?? current.modelId}-${data.spaceId}`}
+                purpose={purpose} label={label} spaceId={data.spaceId}
+                modelId={modelsForPurpose(catalog, purpose).find((m) => m.id === (config.purposes?.[purpose] ?? current.modelId))?.id ?? null}
+                value={config.purposeParameters?.[purpose]}
+                onChange={(value) => {
+                  const custom = { ...config.purposeParameters };
+                  if (Object.keys(value).length) custom[purpose] = value; else delete custom[purpose];
+                  setConfig({ ...config, purposeParameters: custom });
+                }}
+                onError={(message) => setPurposeErrors((previous) => previous[purpose] === message ? previous : { ...previous, [purpose]: message })}
+              />
+              </React.Fragment>
             ))}
           {catalog && modelsForPurpose(catalog, 'embedding').length > 0 && (
             <>
@@ -529,7 +548,7 @@ export function ModelParameters() {
                   setConfig({
                     ...config,
                     embedding: id
-                      ? { modelId: id, dimension: config.embedding?.modelId === id ? config.embedding.dimension : null }
+                      ? { ...config.embedding, modelId: id, dimension: config.embedding?.modelId === id ? config.embedding.dimension : null }
                       : null,
                   })
                 }
@@ -551,6 +570,17 @@ export function ModelParameters() {
                   }}
                 />
               )}
+              <PurposeRequestJson key={`embedding-${config.embedding?.modelId}-${data.spaceId}`}
+                purpose="embedding" label="语义网向量化" spaceId={data.spaceId}
+                modelId={config.embedding?.modelId ?? null} dimension={config.embedding?.dimension}
+                value={config.embedding?.parameters}
+                onChange={(value) => {
+                  if (config.embedding) { const { parameters: _old, ...selection } = config.embedding;
+                    setConfig({ ...config, embedding: { ...selection, ...(Object.keys(value).length ? { parameters: value } : {}) } });
+                  }
+                }}
+                onError={(message) => setPurposeErrors((previous) => previous.embedding === message ? previous : { ...previous, embedding: message })}
+              />
             </>
           )}
           <Flex justify="flex-end">
@@ -565,7 +595,7 @@ export function ModelParameters() {
             >
               删除参数组
             </Button>
-            <Button loading={busy} disabled={!!jsonError} onClick={() => void save()}>
+            <Button loading={busy} disabled={!!jsonError || Object.values(purposeErrors).some(Boolean)} onClick={() => void save()}>
               {t('Save')}
             </Button>
           </Flex>

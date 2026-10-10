@@ -36,9 +36,9 @@ stream 是浏览器输出偏好，也是本次 Core 请求的显式控制字段�
 
 ## 构建约束
 
-后台用途推荐配置的新要求见 [0011](decisions/0011-background-request-defaults.md)：Core 提供默认与约束，Web 仅呈现来源和提交主动覆盖；不在 UI 复制默认 JSON。该能力尚未实施，展开方式待确认，以下 model-only 路由描述仍是当前代码行为。
+后台用途配置按 [0011](decisions/0011-background-request-defaults.md) 实施：Core 原生 `POST /v1/momo/model-requests/resolve` 提供推荐值、约束、差量覆盖与有效结果，Web 经同源 `POST /api/purpose-parameters` 转接。编辑器主动就地展开，宿主参数配置与 MOC 只保存自定义部分；未修改继续发送 model-only 路由并跟随 Core 推荐值。无新空间、业务数据库或第二套生成流程。
 
-用途配置按 [0010](decisions/0010-model-types-and-purposes.md) 直接引用符合类型的模型；对话请求参数 JSON 不参与后台用途。向量化选择与维数冻结进请求，由 Core 宿主解析不可变连接，Core 复用自身增量索引和查询实现；未选择时显式关闭向量请求，不影响普通检索。Core 的向量降级在对话页使用现有 Alert 显示，不把降级回复误报为向量化已成功。
+用途配置按 [0010](decisions/0010-model-types-and-purposes.md) 直接引用符合类型的模型；对话请求参数 JSON 不参与后台用途。独立生成覆盖随 model_routes 传输；向量化选择、维数及独立 profile 覆盖冻结进请求，由 Core 宿主解析不可变连接。Core 复用增量索引和查询，双方使用同一有效 profile；未选择时显式关闭向量请求，不影响普通检索。Core 的向量降级在对话页使用现有 Alert 显示，不把降级回复误报为向量化已成功。
 
 现有 Vite 7、React 18、pnpm 10 保持不变。实际浏览器模块图禁止 .server.ts、Node 内建模块和 Electron；生产宿主单独构建，不把 Core 地址、配置目录或密钥注入客户端环境。check:web 继续检查无 Electron 依赖、原生桥和启动脚本。
 

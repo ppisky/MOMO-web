@@ -1,6 +1,7 @@
 import {
   purposeNames,
   modelsForPurpose,
+  purposeRouteParameters,
   type Parameters,
   type ResolvedParameters,
   type ModelPurpose,
@@ -13,6 +14,8 @@ export function validatePurposeModels(current: Parameters, catalog: Models) {
     const id = current.purposes?.[purpose]
     if (id && !modelsForPurpose(catalog, purpose).some((m) => m.id === id))
       throw new CoreError(400, 'invalid_purpose_model', `${purposeNames[purpose]}的模型类型不符合用途，请重新选择。`)
+    if (current.purposeParameters?.[purpose] && !modelsForPurpose(catalog, purpose).some((m) => m.id === (id ?? current.groups.find((g) => g.id === current.selectedId)?.modelId)))
+      throw new CoreError(400, 'purpose_model_not_ready', `${purposeNames[purpose]}需要先选择符合用途的模型。`)
   }
   if (current.embedding) {
     const model = catalog.models.find((m) => m.id === current.embedding?.modelId && m.kind === 'embedding')
@@ -40,13 +43,13 @@ export function resolveParameters(current: Parameters, catalog?: Models): Resolv
     const id = current.purposes?.[purpose]
     const modelId = id ?? selected.modelId
     if (purpose === 'vision' && !catalog?.models.some((m) => m.id === modelId && m.kind === 'vision')) continue
-    group.modelRoutes[purpose] = { model: reference(modelId) }
+    group.modelRoutes[purpose] = { model: reference(modelId), ...purposeRouteParameters(current.purposeParameters?.[purpose] ?? {}) }
   }
   if (catalog) {
     const model = catalog.models.find((m) => m.id === current.embedding?.modelId)
     group.embedding =
       current.embedding && model?.reference
-        ? { model: model.reference, dimension: current.embedding.dimension }
+        ? { model: model.reference, dimension: current.embedding.dimension, ...(current.embedding.parameters ? { parameters: current.embedding.parameters } : {}) }
         : { model: null, dimension: null }
   }
   return group

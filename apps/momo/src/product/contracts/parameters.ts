@@ -31,12 +31,13 @@ export type Parameters = {
   selectedId: string
   groups: ParameterGroup[]
   purposes?: Partial<Record<ModelPurpose, string | null>>
-  embedding?: { modelId: string; dimension: number | null } | null
+  purposeParameters?: Partial<Record<ModelPurpose, Record<string, unknown>>>
+  embedding?: { modelId: string; dimension: number | null; parameters?: Record<string, unknown> } | null
 }
 export type ResolvedParameters = ParameterGroup & {
   stream?: boolean
   modelReference?: string
-  embedding?: { model: string | null; dimension: number | null }
+  embedding?: { model: string | null; dimension: number | null; parameters?: Record<string, unknown> }
   modelRoutes?: Record<
     string,
     {
@@ -88,7 +89,7 @@ export function parameters(value: unknown): Parameters {
   if (!groups.some((g) => g.id === selectedId) || new Set(groups.map((g) => g.id)).size !== groups.length)
     throw Error('参数组不存在或重复')
   const rawPurposes = v.purposes == null ? {} : record(v.purposes)
-  if (Object.keys(rawPurposes).some((k) => !(k in purposeNames))) throw Error('未知模型用途')
+  if (Object.keys(rawPurposes).some((k) => !Object.hasOwn(purposeNames, k))) throw Error('未知模型用途')
   const purposes: Parameters['purposes'] = {}
   for (const key of Object.keys(purposeNames) as ModelPurpose[]) {
     const id = rawPurposes[key] == null ? null : uuid(rawPurposes[key])
@@ -98,14 +99,24 @@ export function parameters(value: unknown): Parameters {
   let embedding: Parameters['embedding']
   if (v.embedding != null) {
     const e = record(v.embedding)
-    embedding = { modelId: uuid(e.modelId), dimension: nullable(e.dimension, 1, 8192, true) }
+    embedding = { modelId: uuid(e.modelId), dimension: nullable(e.dimension, 1, 8192, true),
+      ...(e.parameters === undefined ? {} : { parameters: embeddingParameters(e.parameters) }) }
     if (embedding.dimension === null) throw Error('请填写向量维数')
+  }
+  const purposeParameters: Parameters['purposeParameters'] = {}
+  if (v.purposeParameters !== undefined) {
+    for (const [purpose, value] of Object.entries(record(v.purposeParameters))) {
+      if (!Object.hasOwn(purposeNames, purpose)) throw Error('未知模型用途')
+      const custom = purposeParameterJson(value)
+      if (Object.keys(custom).length) purposeParameters[purpose as ModelPurpose] = custom
+    }
   }
   return {
     revision: Number(v.revision),
     selectedId,
     groups,
     purposes,
+    ...(Object.keys(purposeParameters).length ? { purposeParameters } : {}),
     ...(v.embedding === undefined ? {} : { embedding: embedding ?? null }),
   }
 }
@@ -140,12 +151,13 @@ export function resolvedParameters(input: unknown): ResolvedParameters {
     else {
       if (!Number.isInteger(e.dimension) || Number(e.dimension) < 1 || Number(e.dimension) > 8192)
         throw Error('无效向量维数')
-      result.embedding = { model: reference(e.model), dimension: Number(e.dimension) }
+      result.embedding = { model: reference(e.model), dimension: Number(e.dimension),
+        ...(e.parameters === undefined ? {} : { parameters: embeddingParameters(e.parameters) }) }
     }
   }
   if (raw.modelRoutes !== undefined) {
     const routes = record(raw.modelRoutes)
-    if (Object.keys(routes).some((key) => !(key in purposeNames))) throw Error('未知模型用途')
+    if (Object.keys(routes).some((key) => !Object.hasOwn(purposeNames, key))) throw Error('未知模型用途')
     result.modelRoutes = Object.fromEntries(
       Object.entries(routes).map(([purpose, value]) => {
         const route = record(value)
@@ -257,4 +269,30 @@ export function requestFromJson(group: ParameterGroup, currentStream: boolean, i
   const { stream = currentStream, ...values } = record(input)
   if (typeof stream !== 'boolean') throw Error('stream 必须为 true 或 false')
   return { group: groupFromJson(group, values), stream }
+}
+
+export function purposeParameterJson(input: unknown): Record<string, unknown> {
+  const group: ParameterGroup = { id: '00000000-0000-4000-8000-000000000011', name: '用途参数', temperature: null, topP: null, maxOutput: null }
+  return parameterJson(groupFromJson(group, input))
+}
+
+export function purposeRouteParameters(input: unknown) {
+  const { temperature, top_p, max_output_tokens, ...extra } = purposeParameterJson(input)
+  return { ...(temperature === undefined ? {} : { temperature: Number(temperature) }),
+    ...(top_p === undefined ? {} : { top_p: Number(top_p) }),
+    ...(max_output_tokens === undefined ? {} : { max_output_tokens: Number(max_output_tokens) }),
+    ...(Object.keys(extra).length ? { parameters: extra } : {}) }
+}
+
+export function embeddingParameters(input: unknown): Record<string, unknown> {
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(record(input))) {
+    if (!['normalization', 'send_dimensions', 'query_prefix', 'document_prefix'].includes(key)) throw Error(`向量化不支持参数 ${key}`)
+    if (value === null) continue
+    if (key === 'normalization' && (typeof value !== 'string' || !['none', 'l2'].includes(value))) throw Error('normalization 必须为 none 或 l2')
+    if (key === 'send_dimensions' && typeof value !== 'boolean') throw Error('send_dimensions 必须为 true 或 false')
+    if (key.endsWith('_prefix') && (typeof value !== 'string' || new TextEncoder().encode(value).byteLength > 4096)) throw Error('向量化前缀必须为不超过 4096 字节的文本')
+    result[key] = value
+  }
+  return result
 }

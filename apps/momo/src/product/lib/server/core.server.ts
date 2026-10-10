@@ -86,6 +86,8 @@ export class CoreClient {
       )
     }
     if (!response.ok) {
+      if (path === '/v1/momo/model-requests/resolve' && [404, 405].includes(response.status))
+        throw new CoreError(409, 'core_version_mismatch', '当前 Core 尚不支持用途推荐配置接口，请更新与网页配套的 Core。')
       if (
         (response.status === 404 || response.status === 405) &&
         (path.startsWith('/v1/memory/identity-binding') || path === '/v1/memory/assets/configure')
@@ -107,11 +109,18 @@ export class CoreClient {
           throw new CoreError(409, 'core_version_mismatch', '当前运行的 Core 尚不支持留空上下文长度，请更新配套 Core。')
       }
       let code = `http_${response.status}`
+      let purposeMessage: string | undefined
       try {
         const error = record(record(await response.json()).error)
         if (typeof error.code === 'string' && /^[a-zA-Z0-9_.-]{1,80}$/.test(error.code)) code = error.code
+        if (path === '/v1/momo/model-requests/resolve' && typeof error.message === 'string') {
+          const denied = /^request parameter "([a-zA-Z][a-zA-Z0-9_]{0,63})" is not allowed by policy$/.exec(error.message)
+          if (denied) purposeMessage = `当前个人空间未允许参数 ${denied[1]}，请移除该参数或在本页明确允许。`
+          else if (/^request override (temperature|max_output_tokens) is rejected by policy$/.test(error.message)) purposeMessage = '当前个人空间拒绝这项参数覆盖，请恢复默认或调整空间策略。'
+          else if (/^request override max_output_tokens=\d+ must be between \d+ and \d+$/.test(error.message)) purposeMessage = '最大输出超出所选模型的预算范围，请降低该值。'
+        }
       } catch {}
-      throw new CoreError(response.status, code)
+      throw new CoreError(response.status, code, purposeMessage)
     }
     return response
   }

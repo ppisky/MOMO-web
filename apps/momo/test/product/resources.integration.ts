@@ -19,6 +19,7 @@ import { readParameters } from '../../src/product/lib/server/parameters.server';
 import { models as parseModels } from '../../src/product/contracts/models';
 import { parameterPolicy, enableParameterPolicy } from '../../src/product/contracts/parameter-policy';
 import { verifyEmbeddings } from './embeddings.verification';
+import { verifyPurposeParameters } from './purpose-parameters.verification';
 
 const binary = process.env.MOMO_CORE_SERVER;
 if (!binary) throw Error('Set MOMO_CORE_SERVER to the pinned Core binary');
@@ -60,8 +61,9 @@ const provider = httpServer(async (request, response) => {
     return;
   }
   if (body.stream !== true) {
+    const maintenance = (body.messages as { content?: unknown }[] | undefined)?.some((m) => typeof m.content === 'string' && m.content.includes('"maintenance_kind"'));
     response.writeHead(200, { 'Content-Type': 'application/json' });
-    response.end(JSON.stringify({ id: 'fixture-upstream', choices: [{ message: { role: 'assistant', content: '完整接入成功' }, finish_reason: 'stop' }] }));
+    response.end(JSON.stringify({ id: 'fixture-upstream', choices: [{ message: { role: 'assistant', content: maintenance ? 'patches: []' : '完整接入成功' }, finish_reason: 'stop' }] }));
     return;
   }
   response.writeHead(200, { 'Content-Type': 'text/event-stream' });
@@ -341,6 +343,7 @@ try {
     roleId: role.id, conversationId: conversation.id, upstream: requests,
   });
   await verifyEmbeddings({ call: (path, input) => call(action, path, input), client, space, conversation: conversation.id, requests });
+  await verifyPurposeParameters({ call: (path, input) => call(action, path, input), client, space, conversation: conversation.id, requests });
   console.log(
     'PASS: Web HTTP host + real Core character editing/conversation, prompt save/reset, sparse policy/CAS, memory/NSG reads and Space isolation',
   );

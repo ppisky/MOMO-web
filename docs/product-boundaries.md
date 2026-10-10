@@ -25,4 +25,4 @@
 
 2026-10-10 补充：模型类型显示文本/视觉/向量化，Core chat 枚举不变。MOC 仅导出 source=override 的提示词；恢复默认后排除，内置正文不重复携带。流式开关与对话请求参数 JSON 的 stream 双向同步，实际 Core 请求遵循该值，同一请求 ID 的重试保留原模式。MO State 配置档增加职责解释，保留默认闭环自治与 V1 投影能力；参数页沿用原结构，按 [0010](decisions/0010-model-types-and-purposes.md) 显示对应模型的用途，撤销未确认的折叠布局提案。
 
-后台用途推荐请求配置为本轮新要求：默认由 Core 提供，配置符合用途的模型后才允许主动打开 JSON 覆盖，支持删除覆盖恢复默认。对话 JSON 仍直接显示且与后台独立。具体边界见 [0011](decisions/0011-background-request-defaults.md)；入口展开方式仍待确认，Core 推荐配置资源与 Web 编辑器尚未实施。
+后台用途推荐请求配置已按 [0011](decisions/0011-background-request-defaults.md) 实施：Core 提供推荐值与校验接口，配置符合用途的模型后主动就地展开 JSON，支持删除覆盖恢复推荐值。对话 JSON 仍直接显示且与后台独立；向量化只接受自身 profile 配置。覆盖与现有模型用途配置一起保存，MOC 仅携带自定义部分，不新增空间或导出分类。

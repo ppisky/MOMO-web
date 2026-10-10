@@ -5,19 +5,22 @@ import { models } from '../contracts/models'
 import { CoreError } from '../lib/server/core.server'
 import { readParameters, saveParameters } from '../lib/server/parameters.server'
 import { validatePurposeModels } from '../lib/server/resolve-parameters.server'
+import { canonicalPurposeParameters } from '../lib/server/purpose-parameters.server'
+import { uuid } from '../contracts/core'
 export function loader() {
   return Response.json(readParameters(), { headers: { 'Cache-Control': 'no-store' } })
 }
 export async function action({ request }: ActionFunctionArgs) {
   try {
     const input = await actionInput(request)
-    const value = parameters(input)
+    let value = parameters(input)
     const catalog = models(await (await core().request('/v1/model-configuration')).json())
     for (const group of value.groups)
       if (group.modelId && !catalog.models.some((m) => m.id === group.modelId && m.kind !== 'embedding'))
         throw new CoreError(400, 'invalid_generation_model', '请选择对话或多模态模型。')
     validatePurposeModels(value, catalog)
     if (readParameters().revision !== value.revision) throw new CoreError(409, 'parameter_revision_changed')
+    value = await canonicalPurposeParameters(value, catalog, input.spaceId === undefined ? undefined : uuid(input.spaceId))
     // Parameter groups are App-owned. Core policy has its own explicit operation.
     return Response.json(saveParameters(value))
   } catch (e) {

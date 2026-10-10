@@ -1,13 +1,13 @@
 {
-  "webBaseline": "62c18c999431ece0dbeae0251a713276a2f8e534",
-  "coreRevision": "eb4f271d1fdaccb1536ca293505f2c5a22b0e14b",
+  "webBaseline": "25147eb99d01d08566f3b4a5477b47e14a034454",
+  "coreRevision": "d3d598e63ab452dc112e5f06ac60a2f701bb8f28",
   "coreSource": "MOMO-core independent repository, codex/space-lifecycle worktree",
-  "previousCoreRevision": "c44f5ffee737f5915f9baae20b49a33717eaced1",
+  "previousCoreRevision": "e83c2d1d2c03bea9e330f15b136b6fe64ae575dd",
   "rust": "1.99.0",
   "pnpm": "10.33.0",
   "node": "26.11.1",
   "verified": "2026-10-10",
-  "scope": "Type-gated direct purpose models, dialogue-only request JSON, configured NSG embedding selection with Core incremental indexing/retrieval/cancellation and explicit degradation; retained prompt delta export, stream delivery, scopes and existing-data services",
+  "scope": "Core-owned purpose request defaults and native resolution API; explicit inline independent overrides, embedding profile configuration, delta-only MOC export, captured replay/maintenance and reset; preserved existing assets and web services",
   "appChanged": false,
   "ronChanged": false
 }

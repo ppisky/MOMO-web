@@ -5,6 +5,7 @@ import * as chat from '../../routes/api.chat'
 import * as conversations from '../../routes/api.conversations'
 import * as models from '../../routes/api.models'
 import * as parameters from '../../routes/api.parameters'
+import * as purposeParameters from '../../routes/api.purpose-parameters'
 import * as resources from '../../routes/api.resources'
 import * as assets from '../../routes/api.assets'
 import * as moc from '../../routes/api.moc'
@@ -23,6 +24,7 @@ const routes: Routes = {
   '/api/assets': assets,
   '/api/moc': moc,
   '/api/parameters': parameters,
+  '/api/purpose-parameters': purposeParameters,
   '/api/models': models,
   '/api/chat': chat,
   '/api/cancel': cancel,
