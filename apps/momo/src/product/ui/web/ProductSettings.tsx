@@ -1,9 +1,9 @@
 import React from 'react';
 import { MoStateSettings } from './MoStateSettings';
 import { MocExport } from './MocExport';
-import { Stack, Text, Title } from '@mantine/core';
+import { Stack } from '@mantine/core';
+import { ArchivedChats } from './ArchivedChats';
 import { ProviderSettings } from './ProviderSettings';
-import { useTranslation } from 'react-i18next';
 import { Settings } from './Settings';
 import { GeneralSettings } from './GeneralSettings';
 import { ChatSettings } from './ChatSettings';
@@ -12,7 +12,6 @@ import { SpaceSettings } from '../../features/spaces/SpaceSettings';
 import { useProduct } from './context';
 export function ProductSettings({ page, onClose }: { page: string; onClose: () => void }) {
   const { data } = useProduct();
-  const { t } = useTranslation();
   return (
     <Settings page={page} onClose={onClose}>
       {page === 'spaces' ? (
@@ -32,12 +31,7 @@ export function ProductSettings({ page, onClose }: { page: string; onClose: () =
           <RuntimeSettings />
         </Stack>
       ) : page === 'archive' ? (
-        <Stack p="md" gap="lg">
-          <Title order={5}>{t('Archived Chats')}</Title>
-          <Text size="sm" c="chatbox-secondary">
-            对话归档与恢复尚未接入。现有对话仍保留在侧栏。
-          </Text>
-        </Stack>
+        <ArchivedChats key={data.spaceId} />
       ) : page === 'provider' ? (
         <ProviderSettings />
       ) : null}

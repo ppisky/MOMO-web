@@ -21,7 +21,7 @@ export function validatePurposeModels(current: Parameters, catalog: Models) {
     const model = catalog.models.find((m) => m.id === current.embedding?.modelId && m.kind === 'embedding')
     const provider = catalog.providers.find((p) => p.id === model?.provider_id)
     if (!model || !provider || !['openai', 'openai_responses'].includes(provider.protocol))
-      throw new CoreError(400, 'invalid_embedding_model', '请选择提供 OpenAI 兼容向量化接口的向量化模型。')
+      throw new CoreError(400, 'invalid_embedding_model', '请选择提供 OpenAI Embeddings 接口的向量化模型。')
   }
 }
 

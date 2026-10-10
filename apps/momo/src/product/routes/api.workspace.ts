@@ -11,7 +11,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const [version, characters, conversations] = await Promise.all([
       client.health(),
       client.characters(),
-      client.conversations(),
+      client.conversations(false),
     ]);
     const selected = conversations.find((value) => value.id === search.get('conversation')) ?? null;
     const history = selected ? await client.messages(selected.id) : [];

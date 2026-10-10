@@ -20,6 +20,7 @@ import { models as parseModels } from '../../src/product/contracts/models';
 import { parameterPolicy, enableParameterPolicy } from '../../src/product/contracts/parameter-policy';
 import { verifyEmbeddings } from './embeddings.verification';
 import { verifyPurposeParameters } from './purpose-parameters.verification';
+import { verifyConversationArchive } from './archive.verification';
 
 const binary = process.env.MOMO_CORE_SERVER;
 if (!binary) throw Error('Set MOMO_CORE_SERVER to the pinned Core binary');
@@ -344,6 +345,7 @@ try {
   });
   await verifyEmbeddings({ call: (path, input) => call(action, path, input), client, space, conversation: conversation.id, requests });
   await verifyPurposeParameters({ call: (path, input) => call(action, path, input), client, space, conversation: conversation.id, requests });
+  await verifyConversationArchive({ client, space, other: second.id, id: conversation.id, get, post, webOrigin });
   console.log(
     'PASS: Web HTTP host + real Core character editing/conversation, prompt save/reset, sparse policy/CAS, memory/NSG reads and Space isolation',
   );

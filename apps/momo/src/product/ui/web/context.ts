@@ -9,6 +9,8 @@ export type ProductContext = {
   selectedRole: string | null;
   selectRole: (id: string | null) => void;
   openSearch: () => void;
+  runningConversationId?: string | null;
+  setConversationRunning?: (id: string | null) => void;
 };
 export const Product = createContext<ProductContext | null>(null);
 export function useProduct() {

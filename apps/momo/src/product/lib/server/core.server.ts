@@ -86,6 +86,9 @@ export class CoreClient {
       )
     }
     if (!response.ok) {
+      if (/^\/v1\/conversations\/[0-9a-f-]+\/archive$/.test(path) &&
+          (response.status === 405 || (response.status === 404 && !response.headers.get('Content-Type')?.includes('application/json'))))
+        throw new CoreError(409, 'core_version_mismatch', '当前 Core 缺少对话归档接口，请更新与网页配套的 Core。')
       if (path === '/v1/momo/model-requests/resolve' && [404, 405].includes(response.status))
         throw new CoreError(409, 'core_version_mismatch', '当前 Core 尚不支持用途推荐配置接口，请更新与网页配套的 Core。')
       if (
@@ -144,14 +147,51 @@ export class CoreClient {
     return values;
   }
 
-  async conversations() {
+  async conversations(archived?: boolean) {
     const values = list(
-      await (await this.request(`/v1/conversations?space_id=${this.config.conversationSpaceId}`)).json(),
-      conversation,
+      await (
+        await this.request(
+          `/v1/conversations?space_id=${this.config.conversationSpaceId}${archived === undefined ? '' : `&archived=${archived}`}`,
+        )
+      ).json(),
+      (value) => {
+        if (!('archived_at' in record(value)))
+          throw new CoreError(
+            409,
+            'core_version_mismatch',
+            '当前 Core 缺少对话归档状态，请更新与网页配套的 Core。',
+          );
+        return conversation(value);
+      },
     );
     if (values.some((value) => value.space_id !== this.config.conversationSpaceId))
       throw new Error('Core 返回了授权范围外的会话');
+    if (archived !== undefined && values.some((value) => (value.archived_at !== null) !== archived))
+      throw new CoreError(
+        502,
+        'conversation_archive_mismatch',
+        'Core 返回了不符合归档筛选条件的对话。',
+      );
     return values;
+  }
+
+  async archiveConversation(id: string, archived: boolean) {
+    const expectedId = uuid(id);
+    const result = conversation(
+      await (
+        await this.request(`/v1/conversations/${expectedId}/archive`, {
+          method: 'POST',
+          body: JSON.stringify({ space_id: this.config.conversationSpaceId, archived }),
+        })
+      ).json(),
+    );
+    if (
+      result.id !== expectedId ||
+      result.space_id !== this.config.conversationSpaceId ||
+      (result.archived_at !== null) !== archived
+    )
+      throw new CoreError(502, 'conversation_archive_mismatch');
+    return result;
   }
 
   async requireConversation(id: string) {

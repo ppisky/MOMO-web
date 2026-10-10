@@ -48,6 +48,7 @@ function ProductRoot() {
   const [search, setSearch] = useState(false);
   const [selectedRole, selectRole] = useState<string | null>(null);
   const [first, setFirst] = useState<{ id: string; input: string; requestId: string } | null>(null);
+  const [runningConversationId, setConversationRunning] = useState<string | null>(null);
   const previous = useRef('/');
   const small = useIsSmallScreen();
   const ui = useUIStore((s) => s);
@@ -196,6 +197,8 @@ function ProductRoot() {
         selectedRole,
         selectRole,
         openSearch: () => setSearch(true),
+        runningConversationId,
+        setConversationRunning,
       }}
     >
       <Box id={error ? "momo-product-degraded" : "momo-product-ready"} className="momo-product" h="100dvh" style={{ overflow: 'hidden' }} data-momo-state={error ? 'degraded' : 'ready'} data-momo-error={error || undefined}>

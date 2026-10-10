@@ -14,6 +14,7 @@ export type Conversation = {
   space_id: string;
   character_id: string | null;
   title: string;
+  archived_at: string | null;
 };
 export type Message = {
   id: string;
@@ -77,11 +78,18 @@ export function characterFields(input: Record<string, unknown>) {
 
 export function conversation(value: unknown): Conversation {
   const item = record(value);
+  const archivedAt = item.archived_at === null ? null : text(item.archived_at, 'archived_at');
+  if (
+    archivedAt !== null &&
+    (!/^\d{4}-\d{2}-\d{2}T/.test(archivedAt) || !Number.isFinite(Date.parse(archivedAt)))
+  )
+    throw Error('无效对话归档时间');
   return {
     id: uuid(item.id),
     space_id: uuid(item.space_id),
     character_id: item.character_id === null ? null : uuid(item.character_id),
     title: text(item.title, 'title'),
+    archived_at: archivedAt,
   };
 }
 

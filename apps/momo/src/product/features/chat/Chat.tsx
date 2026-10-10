@@ -67,7 +67,7 @@ function ChatSession({
   onConsumed,
 }: Props) {
   const settings = useSettingsStore((s) => s);
-  const { openSettings } = useProduct();
+  const { openSettings, setConversationRunning } = useProduct();
   const background = useImage(settings.backgroundImageKey);
   const viewport = useRef<HTMLDivElement>(null);
   const consumed = useRef(false);
@@ -88,6 +88,7 @@ function ChatSession({
         void post('/api/cancel', { spaceId, requestId: running.requestId }).catch(() => {});
         running.controller.abort();
         active.current = null;
+        setConversationRunning?.(null);
       }
     };
   }, [spaceId, conversationId]);
@@ -119,6 +120,7 @@ function ChatSession({
       { id: assistantId, role: 'assistant', content: '', createdAt: new Date(), status: { type: 'running' } },
     ]);
     setIsRunning(true);
+    setConversationRunning?.(conversationId);
     setError(null);
     let state = initialProjection(requestId);
     setEmbeddingWarning(false);
@@ -191,6 +193,7 @@ function ChatSession({
           ),
         );
         setIsRunning(false);
+        setConversationRunning?.(null);
         if (active.current === run) active.current = null;
       }
     }

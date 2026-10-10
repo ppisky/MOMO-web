@@ -18,6 +18,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const spaceId = uuid(query.get('space'));
     const client = core(spaceId);
     switch (query.get('kind')) {
+      case 'archived-conversations':
+        return Response.json(await client.conversations(true), { headers: { 'Cache-Control': 'no-store' } });
       case 'identities':
         return Response.json(
           await (await client.request(`/v1/memory/identity-binding?space_id=${spaceId}`)).json()
@@ -92,6 +94,9 @@ export async function action({ request }: ActionFunctionArgs) {
     const spaceId = uuid(input.spaceId);
     const client = core(spaceId);
     switch (input.command) {
+      case 'conversation-archive':
+      case 'conversation-restore':
+        return Response.json(await client.archiveConversation(uuid(input.id), input.command === 'conversation-archive'));
       case 'state-contract-save':
       case 'state-contract-reset': {
         const revision = text(input.revision, 'revision');

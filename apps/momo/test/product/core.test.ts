@@ -10,7 +10,7 @@ const conv = '00000000-0000-4000-8000-000000000103';
 const char = '00000000-0000-4000-8000-000000000104';
 const requestId = '00000000-0000-4000-8000-000000000105';
 const config = { coreOrigin: 'http://127.0.0.1:8765', personalSpaceId: personal, conversationSpaceId: space };
-const convDTO = { id: conv, space_id: space, character_id: char, title: '故事' };
+const convDTO = { id: conv, space_id: space, character_id: char, title: '故事', archived_at: null };
 const calls: { path: string; init?: RequestInit }[] = [];
 const transport: typeof fetch = async (input, init) => {
   const path = String(input).replace(config.coreOrigin, ''); calls.push({ path, ...(init ? { init } : {}) });
@@ -25,6 +25,8 @@ const transport: typeof fetch = async (input, init) => {
 test('DTO boundaries reject arrays, arbitrary IDs, unsupported roles and malformed dates', () => {
   assert.throws(() => uuid('../../private')); assert.throws(() => character([]));
   assert.throws(() => conversation({ ...convDTO, character_id: undefined }));
+  for (const archived_at of [undefined, false, 123, 'yesterday', '1'])
+    assert.throws(() => conversation({ ...convDTO, archived_at }));
   assert.throws(() => message({ id: requestId, conversation_id: conv, role: 'tool', content: 'x', created_at: '2026-10-07T00:00:00Z' }));
   assert.throws(() => message({ id: requestId, conversation_id: conv, role: 'user', content: 'x', created_at: 'yesterday' }));
 });
@@ -74,6 +76,30 @@ test('cancel includes personal Space and never treats transport abort as server 
   const client = new CoreClient(config, transport); await client.cancel(requestId);
   assert.equal(calls.at(-1)?.path, `/v1/momo/responses/${requestId}/cancel`);
   assert.deepEqual(JSON.parse(String(calls.at(-1)?.init?.body)), { personal_space_id: personal });
+});
+
+test('archive boundary selects a scoped list and validates the changed identity and state', async () => {
+  const archived = { ...convDTO, archived_at: '2026-10-11T00:00:00Z' };
+  const archiveCalls: { path: string; body?: unknown }[] = [];
+  const archiveTransport: typeof fetch = async (input, init) => {
+    const path = String(input).replace(config.coreOrigin, '');
+    const body = init?.body ? JSON.parse(String(init.body)) : undefined;
+    archiveCalls.push({ path, body });
+    if (path.endsWith('&archived=true')) return Response.json([archived]);
+    if (path.endsWith('&archived=false')) return Response.json([convDTO]);
+    return Response.json(body.archived ? archived : convDTO);
+  };
+  const client = new CoreClient(config, archiveTransport);
+  assert.deepEqual(await client.conversations(true), [archived]);
+  assert.deepEqual(await client.conversations(false), [convDTO]);
+  assert.deepEqual(await client.archiveConversation(conv, true), archived);
+  assert.deepEqual(archiveCalls.at(-1), { path: `/v1/conversations/${conv}/archive`, body: { space_id: space, archived: true } });
+  assert.deepEqual(await client.archiveConversation(conv, false), convDTO);
+  for (const invalid of [{ ...archived, id: char }, { ...archived, space_id: personal }, convDTO])
+    await assert.rejects(new CoreClient(config, async () => Response.json(invalid)).archiveConversation(conv, true));
+  await assert.rejects(new CoreClient(config, async () => Response.json([archived])).conversations(false));
+  await assert.rejects(new CoreClient(config, async () => Response.json([{ id: conv, space_id: space, title: 'Old' }])).conversations(false),
+    (error: unknown) => error instanceof CoreError && error.code === 'core_version_mismatch');
 });
 
 test('Core private error fields are excluded from the browser response', async () => {
