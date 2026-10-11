@@ -1,6 +1,6 @@
 # MOMO 图标 / MOMO logos
 
-用户已明确授权下列双圆图标设计采用 **Creative Commons Attribution-ShareAlike 4.0 International（CC BY-SA 4.0）**。
+下列双圆图标设计采用 **Creative Commons Attribution-ShareAlike 4.0 International（CC BY-SA 4.0）**。
 
 | 文件 | 说明 |
 | --- | --- |
@@ -8,7 +8,6 @@
 | `momo.ico` | 原始图标的 ICO 表示 |
 | `../../apps/momo/src/renderer/public/momo.svg` | 移除背景和光影、保留双圆结构的简化矢量版 |
 | `../../apps/momo/src/renderer/favicon.ico` | 网页使用的同一图标容器表示 |
-| `../../legacy/ui-prototype/public/brand/momo.png`、`momo.ico` | 历史原型中的同一设计副本 |
 
 署名 / Attribution：**MOMO project（ppisky and contributors）**。
 

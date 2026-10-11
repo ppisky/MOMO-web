@@ -2,7 +2,7 @@
 
 网页和 [MOMO-core](https://github.com/ppisky/MOMO-core) 分别维护和发布。网页通过 Core 原生 HTTP/SSE 接口调用角色、对话、记忆、NSG 和 MO State；不把 Core 当作可以替换 OpenAI SDK base URL 的服务，也不在浏览器复制业务数据库。
 
-本轮配套版本为 Core `v1.0.0-rc.6`，精确提交见 [运行组合](sources/runtime-combination.json)。RC6 是预发布；网页当前能力和未完成项见 [README](../README.md) 与 [产品边界](product-boundaries.md)。App、ron 暂缓，此组合只提供网页和本机 HTTP 宿主。
+配套版本为 Core `v1.0.0-rc.6`，精确提交见 [运行组合](sources/runtime-combination.json)。RC6 是预发布；网页当前能力和未完成项见 [README](../README.md) 与 [产品边界](product-boundaries.md)。
 
 ## 新安装
 
@@ -44,7 +44,7 @@ pnpm --dir apps/momo install --frozen-lockfile
 
 ## 更新已有安装
 
-停止拥有数据目录的进程，完整备份 Core 数据与网页宿主配置后，再更新二进制。沿用原 `MOMO_DATA_DIR` 和 `MOMO_APP_DATA_DIR`；后者需要指向原 `host-config.sqlite3` 所在目录，以保留个人空间 UUID、参数组和当前空间。不要为换仓库重新初始化数据库。
+停止拥有数据目录的进程，完整备份 Core 数据与网页宿主配置后，再更新二进制。沿用原 `MOMO_DATA_DIR` 和 `MOMO_APP_DATA_DIR`；后者需要指向原 `host-config.sqlite3` 所在目录，以保留个人空间 UUID、参数组和当前空间。不要重新初始化已有数据库。
 
 Core RC6 的 SQLite 迁移、恢复与限制见 [发布说明](https://github.com/ppisky/MOMO-core/blob/v1.0.0-rc.6/docs/release_notes_1_0_0_rc6.md)。归档不会删除历史或资产；旧 MO State 记录没有回复关联时，实际注入显示未知。
 
@@ -52,4 +52,4 @@ Core 默认绑定 loopback，本组合也要求本机同源宿主，并未提供
 
 ## 许可
 
-Core 源码保持 Apache-2.0，网页源码保持 Chatbox 上游 GPL-3.0，来源与署名见 [UPSTREAM](../UPSTREAM.md)。两圆重合图标及简化版单独采用 CC BY-SA 4.0，具体文件与署名见 [图标许可](../public/brand/README.md)。各仓库保留自己的许可，不用一个许可覆盖整个组合。
+Core 源码保持 Apache-2.0，网页源码采用 GPL-3.0，来源与署名见 [UPSTREAM](../UPSTREAM.md)。两圆重合图标及简化版单独采用 CC BY-SA 4.0，具体文件与署名见 [图标许可](../public/brand/README.md)。各仓库保留自己的许可，不用一个许可覆盖整个组合。

@@ -1,6 +1,10 @@
 /** MOMO 主要界面的人工校对文案。 */
 export const momoResources = {
   en: {
+    'Version unavailable': 'Version unavailable',
+    'Open-source projects': 'Open-source projects',
+    'MOMO logos': 'MOMO logos',
+    'Acknowledgements': 'Acknowledgements',
     'Service Providers': 'Service Providers',
     'Model Parameters': 'Model Parameters',
     'Add Custom Provider': 'Add Custom Provider',
@@ -119,6 +123,10 @@ export const momoResources = {
     'API Keys': 'API Keys',
   },
   'zh-Hans': {
+    'Version unavailable': '版本暂不可用',
+    'Open-source projects': '开源项目',
+    'MOMO logos': 'MOMO 图标',
+    'Acknowledgements': '致谢',
     'Service Providers': '服务商',
     'Model Parameters': '模型参数',
     'Add Custom Provider': '添加自定义服务商',
@@ -232,6 +240,10 @@ export const momoResources = {
     'API Keys': 'API 密钥',
   },
   'zh-Hant': {
+    'Version unavailable': '版本暫不可用',
+    'Open-source projects': '開源專案',
+    'MOMO logos': 'MOMO 圖示',
+    'Acknowledgements': '致謝',
     'Service Providers': '服務商',
     'Model Parameters': '模型參數',
     'Add Custom Provider': '新增自訂服務商',
@@ -345,6 +357,10 @@ export const momoResources = {
     'API Keys': 'API 金鑰',
   },
   ja: {
+    'Version unavailable': 'バージョンを取得できません',
+    'Open-source projects': 'オープンソースプロジェクト',
+    'MOMO logos': 'MOMO ロゴ',
+    'Acknowledgements': '謝辞',
     'Service Providers': 'サービス接続',
     'Model Parameters': 'モデルパラメーター',
     'Add Custom Provider': 'カスタム接続を追加',
@@ -464,6 +480,10 @@ export const momoResources = {
     'API Keys': 'API キー',
   },
   ko: {
+    'Version unavailable': '버전을 확인할 수 없습니다',
+    'Open-source projects': '오픈 소스 프로젝트',
+    'MOMO logos': 'MOMO 로고',
+    'Acknowledgements': '감사의 말',
     'Service Providers': '서비스 연결',
     'Model Parameters': '모델 매개변수',
     'Add Custom Provider': '사용자 지정 서비스 추가',

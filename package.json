@@ -6,9 +6,6 @@
   "scripts": {
     "setup": "pnpm --dir apps/momo install",
     "dev": "pnpm --dir apps/momo dev",
-    "demo:parameters": "pnpm --dir apps/momo demo:parameters",
-    "build:demo:parameters": "pnpm --dir apps/momo build:demo:parameters",
-    "preview:demo:parameters": "pnpm --dir apps/momo preview:demo:parameters",
     "dev:web": "pnpm dev",
     "build": "pnpm --dir apps/momo build",
     "typecheck": "pnpm --dir apps/momo check",

@@ -23,8 +23,7 @@ async function readResult(response: Response) {
   return value;
 }
 
-/** Independent React view. Transport endpoints are a development-host bridge;
- * the same contracts/host controller are intended for the target ron host. */
+/** Personal-space management through the host API. */
 export function SpaceSettings({ initial }: { initial: SpaceDirectory }) {
   const [data, setData] = useState(initial);
   const [name, setName] = useState('');

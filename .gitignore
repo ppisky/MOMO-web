@@ -52,3 +52,9 @@ Desktop.ini
 *.swp
 *.swo
 *~
+
+# Local prototypes and presentation-only sites
+/legacy/
+/apps/momo/demos/
+/apps/momo/vite.config.parameters-demo.ts
+/.local/

@@ -1,8 +1,0 @@
-allowBuilds:
-  esbuild: true
-  electron: true
-minimumReleaseAgeExclude:
-  - lucide-react@1.53.0
-  - electron@44.7.0
-nodeDownloadMirrors:
-  release: https://nodejs.org/dist/

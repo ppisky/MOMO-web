@@ -8,7 +8,7 @@ import {
   useNavigate,
   useRouterState,
 } from '@tanstack/react-router';
-import { Alert, Box, Button, Loader, Stack, Text, Title } from '@mantine/core';
+import { Alert, Box, Button, Loader, Stack, Text } from '@mantine/core';
 import { WebProviders, DraftProvider, useIsSmallScreen, useSettingsStore, useUIStore } from './store';
 import Sidebar from './Sidebar';
 import { Product } from './context';
@@ -24,6 +24,7 @@ import { conversation } from '../../contracts/core';
 import { directory } from '../../contracts/spaces';
 import { Chat } from '../../features/chat/Chat';
 import Page from './Page';
+import { About } from './About';
 
 const rootRoute = createRootRoute({ component: ProductRoot });
 const routeTree = rootRoute.addChildren([
@@ -162,15 +163,7 @@ function ProductRoot() {
     ) : contentPath === '/mo-state' ? (
       <MoStateManagement key={data.spaceId} />
     ) : contentPath === '/about' ? (
-      <Page title="关于 MOMO">
-        <Stack p="xl" gap="md">
-          <Title order={3}>MOMO</Title>
-          <Text c="chatbox-secondary">角色与故事，属于你的空间。</Text>
-          <Text size="sm" c="chatbox-tertiary">
-            界面来自 MOMO-web · GPL-3.0
-          </Text>
-        </Stack>
-      </Page>
+      <About coreVersion={error ? '' : data.version} />
     ) : contentPath.startsWith('/session/') && data.selected ? (
       <Page title={data.selected.title}>
         <Chat

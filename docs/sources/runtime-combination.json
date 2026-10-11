@@ -1,15 +1,8 @@
 {
-  "webBaseline": "a1791050a80f3eb288fb8512fa6bb6feee46b2a6",
+  "coreRelease": "v1.0.0-rc.6",
   "coreRevision": "c61a7419dac1cbf1421e0b4bd4e35a3944d4c0f5",
   "coreSource": "https://github.com/ppisky/MOMO-core.git",
-  "previousCoreRevision": "174cba356590fb7a1e8130296afb4c54be53f284",
   "rust": "1.99.0",
   "pnpm": "10.33.0",
-  "node": "26.11.1",
-  "verified": "2026-10-11",
-  "scope": "RC6 paired source release preparation: independent Core HTTP/SSE and Web host; complete local Core release gate (416 Rust, 102 Python, 21 offline contracts, release build/audit/smoke), real release-server resource and Space integration, Web strict types, 51 product tests, 13 translation tests, boundary/build checks and neutral input copy. Logo licensing is CC BY-SA 4.0; source licenses remain separate.",
-  "appChanged": false,
-  "ronChanged": false,
-  "coreRelease": "v1.0.0-rc.6",
-  "coreServerSha256": "95c8d4bb7fe16743c603b7270a0bdc29554b1a66f719552be6d96eda8414c97e"
+  "node": "26.11.1"
 }

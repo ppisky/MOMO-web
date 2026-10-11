@@ -1,28 +1,26 @@
 # 开发与验证
 
-当前在 apps/momo 维护 Core 接入网页，使用 pnpm 10.33.0、Node 26.11.1、原 Vite 7。根目录转发命令；应用有独立 workspace 与锁文件。Electron 已删除，ron 暂缓。
+使用 pnpm 10.33.0。应用脚本由 pnpm 提供 Node 26.11.1；通过 `pnpm --dir apps/momo exec node --version` 核对运行版本。初次安装使用根目录与应用目录的 `pnpm install --frozen-lockfile`。
 
-Windows 可用根目录 node_modules/.bin/pnpm.cmd；系统 Node 22 启动 pnpm 可能显示 engine 警告，pnpm --dir apps/momo exec node --version 核对实际脚本运行时。
-
-| 根目录命令 | 用途 |
+| 命令 | 用途 |
 | --- | --- |
-| pnpm setup | 安装应用依赖 |
 | pnpm dev | 网页与同源 API，127.0.0.1:1212 |
-| pnpm typecheck | 原参照代码与活动产品严格类型检查 |
-| pnpm check:web | Electron 清理边界检查 |
-| pnpm test:product | Core 契约、空间、参数、SSE 与 Web HTTP 安全/取消测试 |
-| pnpm test:product:resources | 隔离真实 Core + Web HTTP + 离线模型：完整角色/开场、记忆/NSG 原子配置、MO State、MOC、参数/提示词与真实生成 |
-| pnpm test:product:spaces | 隔离真实 Core：空间资产迁移、删除和持久化 |
-| pnpm build | dist/web 浏览器产物 + dist/host 服务产物 |
-| pnpm preview | 生产资源与同一 API 宿主，默认 1212 |
-| pnpm demo:parameters | 只展示模型参数的离线演示，预置三类模型，1213 |
-| pnpm build:demo:parameters | 独立静态演示产物 dist/model-parameters-demo |
-| pnpm preview:demo:parameters | 生产演示，1213；不加载 API 宿主、不连接 Core |
+| pnpm typecheck | TypeScript 严格检查 |
+| pnpm check:web | 浏览器、依赖与服务端边界 |
+| pnpm test:product | 契约、参数、空间、SSE、HTTP 安全与取消 |
+| pnpm test:product:resources | 真实 Core 角色、记忆、NSG、MO State、MOC 和生成联调 |
+| pnpm test:product:spaces | 真实 Core 空间迁移、删除和持久化 |
+| pnpm build | 浏览器与 API 宿主生产构建 |
+| pnpm preview | 运行生产构建，默认 1212 |
 
-真实 Core 测试要求环境变量 MOMO_CORE_SERVER 指向已编译的 RC6（c61a7419dac1cbf1421e0b4bd4e35a3944d4c0f5）momo-server。测试自行创建临时数据/宿主目录、随机端口和离线模型，不读取本机用户配置。测试结束停止自己的进程。资源联调包含 NSG 向量化的索引、增量复用、维数失败保护与取消，以及后台推荐值/独立覆盖、实际视觉/记忆/NSG 请求、向量 profile、MOC 差量和恢复/重试；对话归档/恢复验证真实列表筛选、重复操作、重命名、空间隔离、历史和资产保持。维护 drain 仅用于隔离测试批次屏障，不向网页开放管理接口。
+集成测试需要 `MOMO_CORE_SERVER` 指向已编译的配套 momo-server，版本见[运行组合](sources/runtime-combination.json)。测试使用自己的临时目录、随机端口和离线模型，完成后停止测试进程，不读取用户配置。
 
-浏览器隔离验收：先 pnpm build，再在应用目录设置上述 MOMO_CORE_SERVER 并运行 pnpm exec tsx test/product/resources.integration.ts --browser。它运行真实集成测试后保留隔离 Core、fixture 模型和生产 preview 12209；用 http://127.0.0.1:12209/ 检查角色配置与直接新对话、记忆/NSG 保存/归档/恢复、MO State 管理（状态/记录选择、角色侧写查询与重置）及配置和范围 MOC 下载。Ctrl+C 结束测试并停止这些服务，不影响日常 1212 和用户 Core。
+浏览器联调可在构建后，从应用目录运行 `pnpm exec tsx test/product/resources.integration.ts --browser`。它保留隔离测试服务供检查，Ctrl+C 结束。测试夹具只用于验证，不提供独立演示站或产品发布入口。
 
-原 test:roleplay、test:settings、test:brand 继续为保留的旧源码提供回归；通过不能替代活动 Core 产品验收。应用目录还有 check:shared-boundaries、check:packages。按变更范围运行类型、相关测试、边界与生产构建，不自动运行付费供应商测试。
+按修改范围执行类型、相关测试、边界与生产构建。文档修改检查链接及 `git diff --check`。不得提交密钥、私人角色/对话、数据库、日志、环境文件、构建产物或开发专用演示站。
 
-每次任务在所属仓库提交，保留用户改动；本轮 Web 与必要 Core 能力各自独立提交；App 和 ron 不修改。不得提交私有数据、数据库、日志、密钥或构建产物，不自动推送/发布。
+## 发布
+
+发布范围是正式源码、构建与测试脚本、使用说明、接口规范和许可。个人开发记录、原型和本机工具配置不属于发行内容。新增文件先检查 `git diff --cached`，确认来源与必要性。
+
+网页版本以 `apps/momo/package.json` 为准，“关于”页自动读取；Core 版本从运行服务获取，两者不互相冒用版本号。两个仓库分别提交与发布。
