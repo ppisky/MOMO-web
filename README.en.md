@@ -45,7 +45,7 @@ Copy `apps/momo/.env.example` to `apps/momo/.env.local`. Set `MOMO_CORE_ORIGIN` 
 pnpm dev
 ```
 
-Open **http://127.0.0.1:1212/** and configure your model provider in Settings. Use `pnpm build` followed by `pnpm preview` for the production build. Both the web assets and same-origin API host are required; static-only hosting is insufficient. This application is intended for local use and does not provide public-server account authentication.
+Open [http://127.0.0.1:1212/](http://127.0.0.1:1212/) and configure your model provider in Settings. Use `pnpm build` followed by `pnpm preview` for the production build. Both the web assets and same-origin API host are required; static-only hosting is insufficient. This application is intended for local use and does not provide public-server account authentication.
 
 Before upgrading, stop the services and back up both data directories. Keep the same paths to retain personal spaces and configuration. About displays the web package version and the connected Core version automatically.
 
