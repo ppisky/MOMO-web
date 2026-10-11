@@ -19,7 +19,7 @@ MOMO 是一个面向角色与故事的 AI 对话应用，支持长期记忆、�
 
 ## 运行
 
-先按[配套运行指南](docs/core-integration.md)启动 MOMO Core **v1.0.0-rc.6**。使用 **pnpm 10.33.0**；应用脚本的 Node **26.11.1** 由 pnpm 管理。
+先按[配套运行指南](docs/core-integration.md)启动 MOMO Core，配套提交为 [`ef8425d`](https://github.com/ppisky/MOMO-core/commit/ef8425d3ef872cc9ed4491fc1e923e5a4ba40b8b)。使用 **pnpm 10.33.0**；应用脚本的 Node **26.11.1** 由 pnpm 管理。
 
 ```sh
 git clone https://github.com/ppisky/MOMO-web.git

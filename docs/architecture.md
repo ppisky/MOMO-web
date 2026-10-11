@@ -29,8 +29,7 @@ Core 保存角色与对话等业务资产；Web 的 SQLite 保存个人空间目
 
 MOC 由宿主生成临时路径、流式下载后清理；浏览器不能指定文件系统路径，密码不持久化。快速选择和细选映射到同一个 Core 导出计划。
 
-“关于”页的网页版本直接读取应用 package.json，Core 版本来自当前连接的 health 响应；不可用时不展示缓存的旧版本。
+“关于”页的网页版本读取应用 package.json；Core 实际版本读取 health 的 build_info，展示编译时 Git 提交、精确标签及修改状态。无 Git 构建显示“未提供”；旧服务没有该字段时提示升级，连接失败单独报告。
 
-当前 Core 的 `core_version` 来自编译时 Cargo 包版本。RC6 的包版本仍为 `1.0.0`，预发布标识仅存在于发布标签中，因此仅凭 health 响应无法区分 RC6 与正式版。“关于”页展示的是服务报告值，不代表已识别发布渠道。完整发布版本的嵌入及查询列为 Core 下一次发布的[待实现要求](https://github.com/ppisky/MOMO-core/blob/main/docs/release_version_metadata.md)；客户端不得根据网页配套版本或最新标签替运行中的服务猜测版本。
-
+请求接口标准使用 momo.responses/1.0 与 momo.control/1.0，和提交版本分开显示。旧 core_version 仅保留作内部包兼容检查，不作为实际发布版本或请求标准。编译信息的定义见 [Core 构建身份](https://github.com/ppisky/MOMO-core/blob/main/docs/release_version_metadata.md)。
 运行版本见[配套版本](sources/runtime-combination.json)，具体功能语义见[产品边界](product-boundaries.md)。

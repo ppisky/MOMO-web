@@ -82,7 +82,7 @@ function ProductRoot() {
           setData({
             spaces,
             spaceId: spaces.currentId,
-            version: '',
+            coreIdentity: null,
             characters: [],
             conversations: [],
             selected: null,
@@ -163,7 +163,7 @@ function ProductRoot() {
     ) : contentPath === '/mo-state' ? (
       <MoStateManagement key={data.spaceId} />
     ) : contentPath === '/about' ? (
-      <About coreVersion={error ? '' : data.version} />
+      <About identity={error ? null : data.coreIdentity} />
     ) : contentPath.startsWith('/session/') && data.selected ? (
       <Page title={data.selected.title}>
         <Chat

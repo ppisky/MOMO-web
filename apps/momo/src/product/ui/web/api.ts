@@ -12,6 +12,7 @@ import {
   type Message,
 } from '../../contracts/core';
 import { directory, type SpaceDirectory } from '../../contracts/spaces';
+import { workspaceIdentity, type CoreIdentity } from '../../contracts/build';
 export type Workspace = {
   spaces: SpaceDirectory;
   spaceId: string;
@@ -19,7 +20,7 @@ export type Workspace = {
   conversations: Conversation[];
   selected: Conversation | null;
   history: Message[];
-  version: string;
+  coreIdentity: CoreIdentity | null;
 };
 export async function api(path: string, input?: unknown, signal?: AbortSignal): Promise<unknown> {
   const response = await fetch(path, {
@@ -42,7 +43,7 @@ export function workspace(value: unknown): Workspace {
   return {
     spaces: directory(v.spaces),
     spaceId: uuid(v.spaceId),
-    version: text(v.version, 'version'),
+    coreIdentity: workspaceIdentity(v.coreIdentity),
     characters: list(v.characters, character),
     conversations: list(v.conversations, conversation),
     selected: v.selected === null ? null : conversation(v.selected),

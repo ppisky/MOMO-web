@@ -2,7 +2,7 @@
 
 网页和 [MOMO-core](https://github.com/ppisky/MOMO-core) 分别维护和发布。网页通过 Core 原生 HTTP/SSE 接口调用角色、对话、记忆、NSG 和 MO State；不把 Core 当作可以替换 OpenAI SDK base URL 的服务，也不在浏览器复制业务数据库。
 
-配套版本为 Core `v1.0.0-rc.6`，精确提交见 [运行组合](sources/runtime-combination.json)。RC6 是预发布；网页当前能力和未完成项见 [README](../README.md) 与 [产品边界](product-boundaries.md)。
+配套版本为 Core 提交 `ef8425d`（含编译时 Git 版本查询），精确提交见 [运行组合](sources/runtime-combination.json)。网页当前能力和未完成项见 [README](../README.md) 与 [产品边界](product-boundaries.md)。
 
 ## 新安装
 
@@ -11,7 +11,7 @@
 ```sh
 git clone https://github.com/ppisky/MOMO-core.git
 cd MOMO-core
-git checkout v1.0.0-rc.6
+git checkout ef8425d3ef872cc9ed4491fc1e923e5a4ba40b8b
 cargo build --release --package momo-server --locked
 ```
 

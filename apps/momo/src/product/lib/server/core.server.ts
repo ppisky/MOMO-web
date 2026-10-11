@@ -3,6 +3,7 @@ import { assets, receipt, type Removal } from '../../contracts/spaces';
 import type { ResolvedParameters } from '../../contracts/parameters';
 import { requestParameters } from '../../contracts/parameters';
 import { stateManagement, managedDdm } from '../../contracts/mo-state';
+import { coreIdentity, RESPONSE_SCHEMA } from '../../contracts/build';
 
 type HostConfig = { coreOrigin: string; personalSpaceId: string; conversationSpaceId: string; applicationOrigin?: string };
 type HostGlobal = typeof globalThis & {
@@ -132,12 +133,14 @@ export class CoreClient {
   }
 
   async health() {
+    return (await this.healthInfo()).packageVersion;
+  }
+
+  async healthInfo() {
     const value = record(await (await this.request('/health')).json());
     if (value.ok !== true || value.service !== 'momo-server')
       throw new Error('目标不是可用的 MOMO Core 服务');
-    const version = text(value.core_version, 'core_version');
-    if (!/^1\.0\.0(?:-rc\.\d+)?$/.test(version)) throw new Error(`未验证的 Core 版本：${version}`);
-    return version;
+    return coreIdentity(value);
   }
 
   async moStateManagement() {
@@ -337,7 +340,7 @@ export class CoreClient {
           stream: parameters?.stream ?? true,
           ...(parameters ? requestParameters(parameters) : {}),
           momo: {
-            schema: 'momo.responses/1.0',
+            schema: RESPONSE_SCHEMA,
             request_id: requestId,
             conversation_id: id,
             personal_space_id: this.config.personalSpaceId,

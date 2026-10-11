@@ -2,6 +2,7 @@ import { Anchor, Group, Stack, Text, Title } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { version } from '../../../../package.json';
 import Page from './Page';
+import { RESPONSE_SCHEMA, CONTROL_SCHEMA, type CoreIdentity } from '../../contracts/build';
 
 const projects = [
   ['Chatbox', 'https://github.com/chatboxai/chatbox'],
@@ -12,7 +13,7 @@ const projects = [
   ['Vite', 'https://github.com/vitejs/vite'],
 ] as const;
 
-export function About({ coreVersion }: { coreVersion: string }) {
+export function About({ identity }: { identity: CoreIdentity | null }) {
   const { t } = useTranslation();
   return (
     <Page title={t('About MOMO')}>
@@ -20,9 +21,12 @@ export function About({ coreVersion }: { coreVersion: string }) {
         <Stack gap="xs">
           <Title order={3}>MOMO</Title>
           <Text>MOMO Web {version}</Text>
-          <Text size="sm" c="chatbox-secondary">
-            MOMO Core {coreVersion || t('Version unavailable')}
+          <Text size="sm" c="chatbox-secondary" style={{ overflowWrap: 'anywhere' }}>
+            MOMO Core {identity?.build
+              ? `${identity.build.gitTag ? identity.build.gitTag + ' · ' : ''}${identity.build.gitRevision}${identity.build.dirty ? ' · ' + t('Modified build') : ''}`
+              : !identity ? t('Connection unavailable') : identity.metadataAvailable ? t('Git information not provided') : t('Core upgrade required for build information')}
           </Text>
+          <Text size="sm" c="chatbox-secondary">{t('Request standards')}: {RESPONSE_SCHEMA} · {CONTROL_SCHEMA}</Text>
         </Stack>
         <Group gap="lg">
           <Anchor href="https://github.com/ppisky/MOMO-web" target="_blank" rel="noopener noreferrer">MOMO Web</Anchor>

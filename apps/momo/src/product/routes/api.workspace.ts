@@ -8,15 +8,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const spaces = spacesHost().read();
     const spaceId = uuid(search.get('space') ?? spaces.currentId);
     const client = core(spaceId);
-    const [version, characters, conversations] = await Promise.all([
-      client.health(),
+    const [coreIdentity, characters, conversations] = await Promise.all([
+      client.healthInfo(),
       client.characters(),
       client.conversations(false),
     ]);
     const selected = conversations.find((value) => value.id === search.get('conversation')) ?? null;
     const history = selected ? await client.messages(selected.id) : [];
     return Response.json(
-      { spaces, spaceId, version, characters, conversations, selected, history },
+      { spaces, spaceId, coreIdentity, characters, conversations, selected, history },
       { headers: { 'Cache-Control': 'no-store' } },
     );
   } catch (error) {

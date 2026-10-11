@@ -1,6 +1,5 @@
 {
-  "coreRelease": "v1.0.0-rc.6",
-  "coreRevision": "c61a7419dac1cbf1421e0b4bd4e35a3944d4c0f5",
+  "coreRevision": "ef8425d3ef872cc9ed4491fc1e923e5a4ba40b8b",
   "coreSource": "https://github.com/ppisky/MOMO-core.git",
   "rust": "1.99.0",
   "pnpm": "10.33.0",

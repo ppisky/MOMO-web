@@ -1,6 +1,11 @@
 /** MOMO 主要界面的人工校对文案。 */
 export const momoResources = {
   en: {
+    'Modified build': 'Modified build',
+    'Connection unavailable': 'Connection unavailable',
+    'Git information not provided': 'Git information not provided',
+    'Core upgrade required for build information': 'Core upgrade required for build information',
+    'Request standards': 'Request standards',
     'Version unavailable': 'Version unavailable',
     'Open-source projects': 'Open-source projects',
     'MOMO logos': 'MOMO logos',
@@ -123,6 +128,11 @@ export const momoResources = {
     'API Keys': 'API Keys',
   },
   'zh-Hans': {
+    'Modified build': '含未提交修改',
+    'Connection unavailable': '连接不可用',
+    'Git information not provided': '未提供（构建时无 Git 信息）',
+    'Core upgrade required for build information': '请升级 Core 以读取构建信息',
+    'Request standards': '请求接口标准',
     'Version unavailable': '版本暂不可用',
     'Open-source projects': '开源项目',
     'MOMO logos': 'MOMO 图标',
@@ -240,6 +250,11 @@ export const momoResources = {
     'API Keys': 'API 密钥',
   },
   'zh-Hant': {
+    'Modified build': '含未提交修改',
+    'Connection unavailable': '連線不可用',
+    'Git information not provided': '未提供（建置時無 Git 資訊）',
+    'Core upgrade required for build information': '請升級 Core 以讀取建置資訊',
+    'Request standards': '請求介面標準',
     'Version unavailable': '版本暫不可用',
     'Open-source projects': '開源專案',
     'MOMO logos': 'MOMO 圖示',
@@ -357,6 +372,11 @@ export const momoResources = {
     'API Keys': 'API 金鑰',
   },
   ja: {
+    'Modified build': '未コミットの変更あり',
+    'Connection unavailable': '接続できません',
+    'Git information not provided': '未提供（ビルド時に Git 情報なし）',
+    'Core upgrade required for build information': 'ビルド情報の取得には Core の更新が必要です',
+    'Request standards': 'リクエスト規格',
     'Version unavailable': 'バージョンを取得できません',
     'Open-source projects': 'オープンソースプロジェクト',
     'MOMO logos': 'MOMO ロゴ',
@@ -480,6 +500,11 @@ export const momoResources = {
     'API Keys': 'API キー',
   },
   ko: {
+    'Modified build': '커밋되지 않은 변경 포함',
+    'Connection unavailable': '연결할 수 없음',
+    'Git information not provided': '제공되지 않음 (빌드 시 Git 정보 없음)',
+    'Core upgrade required for build information': '빌드 정보를 읽으려면 Core를 업데이트하세요',
+    'Request standards': '요청 인터페이스 표준',
     'Version unavailable': '버전을 확인할 수 없습니다',
     'Open-source projects': '오픈 소스 프로젝트',
     'MOMO logos': 'MOMO 로고',

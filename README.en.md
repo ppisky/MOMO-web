@@ -19,12 +19,12 @@ Configuration-package restoration, conversation deletion/branching/chapters and 
 
 ## Run locally
 
-Start [MOMO Core v1.0.0-rc.6](https://github.com/ppisky/MOMO-core/releases/tag/v1.0.0-rc.6) first. With Rust **1.99.0** and a C/C++ build toolchain installed:
+Start [MOMO Core at `ef8425d`](https://github.com/ppisky/MOMO-core/commit/ef8425d3ef872cc9ed4491fc1e923e5a4ba40b8b) first. With Rust **1.99.0** and a C/C++ build toolchain installed:
 
 ```sh
 git clone https://github.com/ppisky/MOMO-core.git
 cd MOMO-core
-git checkout v1.0.0-rc.6
+git checkout ef8425d3ef872cc9ed4491fc1e923e5a4ba40b8b
 cargo build --release --package momo-server --locked
 ```
 
