@@ -1,17 +1,19 @@
 # MOMO Web
 
-基于 Chatbox 原界面的 MOMO 网页，活动源码在 apps/momo。已移除 Electron。回到原仓库继续开发时，保留 MOMO-app 已完成的 Core 接入、角色、独立记忆/NSG、空间、模型参数组和提示词；ron 兼容暂缓。此前只启动旧 renderer 的回退已纠正，见 [0007](docs/decisions/0007-preserve-core-progress.md)。
+MOMO Web 是基于 Chatbox 界面的角色扮演网页，通过 MOMO-core 提供角色、对话、长期记忆、语义网与 MO State。活动源码位于 `apps/momo`，浏览器与本机 Node 宿主分别构建；已移除 Electron，ron 桌面兼容暂缓。两个项目保持独立维护，通过原生 HTTP/SSE 接入。
+
+[网页源码](https://github.com/ppisky/MOMO-web) · [Core RC6](https://github.com/ppisky/MOMO-core/releases/tag/v1.0.0-rc.6) · [网页 CI](https://github.com/ppisky/MOMO-web/actions/workflows/web.yml)
 
 ## 运行
 
 使用 pnpm 10.33.0。应用脚本使用 pnpm 提供的 Node 26.11.1，根目录启动器支持系统 Node 22.20+。
 
-1. 根目录执行 pnpm install、pnpm setup。
-2. 单独启动兼容的 MOMO-core；已验证 revision 为 174cba356590fb7a1e8130296afb4c54be53f284。
+1. 根目录执行 `pnpm install --frozen-lockfile`、`pnpm --dir apps/momo install --frozen-lockfile`。
+2. 单独启动 MOMO-core `v1.0.0-rc.6`；已验证 revision 为 `c61a7419dac1cbf1421e0b4bd4e35a3944d4c0f5`，见 [配套运行](docs/core-integration.md)。
 3. 复制 apps/momo/.env.example 为 .env.local，填写 MOMO_CORE_ORIGIN（仅 loopback）。已有配置必须让 MOMO_APP_DATA_DIR 指向原 host-config.sqlite3 所在目录，保留 Space ID、参数组和当前空间；不搬动或重新初始化 Core 数据。
 4. 根目录执行 pnpm dev，打开 http://127.0.0.1:1212/。
 
-本机 .env.local 已连接既有 Core 和既有宿主配置，不提交这些本地路径。新安装未配置时 Core 默认 http://127.0.0.1:8765，宿主目录默认 LOCALAPPDATA/MOMO-App。若全局 pnpm 不一致，可先 npx --yes pnpm@10.33.0 install，再使用根目录 node_modules/.bin/pnpm.cmd。
+新安装未配置时 Core 默认 `http://127.0.0.1:8765`。宿主目录在 Windows 默认 `LOCALAPPDATA/MOMO-App`，未设置 LOCALAPPDATA 时位于工作目录的 `MOMO-App`；可通过 `MOMO_APP_DATA_DIR` 指定持久目录。`.env.local`、数据和凭据不提交到仓库。若全局 pnpm 不一致，可先 `npx --yes pnpm@10.33.0 install --frozen-lockfile`，再使用根目录 `node_modules/.bin/pnpm.cmd`。
 
 生产执行 pnpm build、pnpm preview。build 同时生成 dist/web 浏览器资源和 dist/host 服务端模块；preview 使用相同 /api 适配，默认端口 1212。需要停止占用该端口的 dev。不能仅部署静态文件而省略 API 宿主。
 
@@ -37,6 +39,7 @@ MOC 仅携带已修改的提示词空间，内置正文由 Core 提供；恢复�
 本轮落实范围见 [0008](docs/decisions/0008-editable-assets-state-export.md)、[0009](docs/decisions/0009-settings-and-portable-configuration.md) 和 [0014](docs/decisions/0014-conversation-archive.md)。角色简介/头像/背景等展示资产、NSG 治理候选审批、完整来源审计界面、对话删除/分支/篇章仍有缺口。继续依据 [产品边界](docs/product-boundaries.md) 和 [计划](docs/roadmap.md) 实施。
 
 - [架构](docs/architecture.md) · [开发和验证](docs/development.md) · [验证记录](docs/validation.md)
-- [来源](UPSTREAM.md) · [GPL-3.0](LICENSE)
+- [网页与 Core 配套运行](docs/core-integration.md) · [开源准备](docs/decisions/0016-open-source-release.md)
+- [来源](UPSTREAM.md) · [源码 GPL-3.0](LICENSE) · [MOMO 图标 CC BY-SA 4.0](public/brand/README.md)
 
 2026-10-11：[0013](docs/decisions/0013-openai-requests-and-embedding-dimensions.md) 落实 OpenAI 兼容默认 Chat、直接 Responses 和向量维数默认继承。向量请求 JSON 只显示供应商参数，手填维数与 dimensions 双向同步；不再预填 1536，也不显示内部 profile 字段。演示与正式页面共用组件，Core 负责实际维数、索引与协议适配。

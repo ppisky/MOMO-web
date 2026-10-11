@@ -19,7 +19,7 @@ Windows 可用根目录 node_modules/.bin/pnpm.cmd；系统 Node 22 启动 pnpm 
 | pnpm build:demo:parameters | 独立静态演示产物 dist/model-parameters-demo |
 | pnpm preview:demo:parameters | 生产演示，1213；不加载 API 宿主、不连接 Core |
 
-真实 Core 测试要求环境变量 MOMO_CORE_SERVER 指向已编译的 174cba356590fb7a1e8130296afb4c54be53f284 momo-server。测试自行创建临时数据/宿主目录、随机端口和离线模型，不读取本机用户配置。测试结束停止自己的进程。资源联调包含 NSG 向量化的索引、增量复用、维数失败保护与取消，以及后台推荐值/独立覆盖、实际视觉/记忆/NSG 请求、向量 profile、MOC 差量和恢复/重试；对话归档/恢复验证真实列表筛选、重复操作、重命名、空间隔离、历史和资产保持。维护 drain 仅用于隔离测试批次屏障，不向网页开放管理接口。
+真实 Core 测试要求环境变量 MOMO_CORE_SERVER 指向已编译的 RC6（c61a7419dac1cbf1421e0b4bd4e35a3944d4c0f5）momo-server。测试自行创建临时数据/宿主目录、随机端口和离线模型，不读取本机用户配置。测试结束停止自己的进程。资源联调包含 NSG 向量化的索引、增量复用、维数失败保护与取消，以及后台推荐值/独立覆盖、实际视觉/记忆/NSG 请求、向量 profile、MOC 差量和恢复/重试；对话归档/恢复验证真实列表筛选、重复操作、重命名、空间隔离、历史和资产保持。维护 drain 仅用于隔离测试批次屏障，不向网页开放管理接口。
 
 浏览器隔离验收：先 pnpm build，再在应用目录设置上述 MOMO_CORE_SERVER 并运行 pnpm exec tsx test/product/resources.integration.ts --browser。它运行真实集成测试后保留隔离 Core、fixture 模型和生产 preview 12209；用 http://127.0.0.1:12209/ 检查角色配置与直接新对话、记忆/NSG 保存/归档/恢复、MO State 管理（状态/记录选择、角色侧写查询与重置）及配置和范围 MOC 下载。Ctrl+C 结束测试并停止这些服务，不影响日常 1212 和用户 Core。
 

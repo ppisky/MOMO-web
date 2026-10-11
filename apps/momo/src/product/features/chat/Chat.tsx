@@ -247,7 +247,7 @@ function ChatSession({
               <AssistantAvatar size={48} avatarKey={settings.defaultAssistantAvatarKey} />
               <Text fw={600}>{characterName}</Text>
               <Text size="sm" c="chatbox-tertiary">
-                写下对白，或用 *动作* 描述你的回应。
+                输入消息开始对话。
               </Text>
             </Stack>
           )}

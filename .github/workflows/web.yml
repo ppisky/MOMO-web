@@ -1,0 +1,44 @@
+name: Web CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26.11.1
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            apps/momo/pnpm-lock.yaml
+      - name: Install workspace launcher
+        run: pnpm install --frozen-lockfile
+      - name: Install web dependencies
+        run: pnpm --dir apps/momo install --frozen-lockfile
+      - name: Check types
+        run: pnpm typecheck
+      - name: Check browser and Electron boundaries
+        run: pnpm check:web
+      - name: Test product contracts and HTTP host
+        run: pnpm test:product
+      - name: Test interface translations
+        run: pnpm --dir apps/momo exec vitest run src/renderer/i18n/momo-resources.test.ts
+      - name: Build browser and API host
+        run: pnpm build

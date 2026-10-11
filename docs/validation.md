@@ -1,3 +1,16 @@
+# Core RC6 与网页开源准备验证
+
+2026-10-11。Web 基线 a1791050a80f3eb288fb8512fa6bb6feee46b2a6；Core RC6 候选 c61a7419dac1cbf1421e0b4bd4e35a3944d4c0f5。按 [0016](decisions/0016-open-source-release.md) 实施，Core、Web 独立 Git 管理，App 与 ron 未改动。
+
+- Core 完整本机发布门槛通过：Rust 1.99.0、冻结契约哈希、格式、全工作区严格 Clippy、416 项 Rust 测试、102 项 Python 测试、21/21 离线契约（AI 调用 0）、Rustdoc、全工作区全特性 release 构建、RustSec 审计、旧身份字符串扫描，以及实际 release 服务器的健康/空恢复启动检查。本机构建采用 CARGO_BUILD_JOBS=1、CARGO_PROFILE_TEST_DEBUG=0、HOTPATH_METRICS_SERVER_OFF=1。
+- 使用本次真实 release 二进制重新执行 Web 资源联调和个人空间联调，全部通过：真实流式/非流式及重试、角色/开场、记忆/NSG 原子编辑、向量索引/查询及维数失败保护、用途请求、MO State 管理/实际注入/DDM、提示词差量、MOC 范围/密码、归档与空间迁移/删除/至少一个保护。隔离数据和进程已清理，日常数据未参与测试。
+- Web 严格类型、51 项产品测试、13 项语言测试、无 Electron 边界、浏览器/API 宿主生产构建和 diff check 通过。实际 1212 浏览器输入占位符为“输入消息…”，保留 Enter/Shift+Enter；截图在忽略目录 `.cache/neutral-message-input-20261011.png`。本次没有调用付费服务商。
+- 双圆原图、简化版及其同一图标容器副本逐项列为 CC BY-SA 4.0，Core 保持 Apache-2.0，Web 保持 GPL-3.0。生产资源包含图标署名及完整许可，许可文件与源文件的 SHA256 相同；第三方资源不重授权。
+- Web 源码历史路径检查未发现本地配置、数据库、日志或私钥文件；常见凭据模式扫描仅命中旧开发清单及文档里的公开 AWS 示例值、合成测试文件的示例密钥。新增网页双平台 CI 配置，远端执行状态须另行记录；本机通过不写成远端通过。
+
+Core RC6 已通过 [精确提交的双平台与安全 CI](https://github.com/ppisky/MOMO-core/actions/runs/38119576818)，[公开 Release](https://github.com/ppisky/MOMO-core/releases/tag/v1.0.0-rc.6) 的不可变 tag 指向上述候选提交。当前仍是预发布，质量门槛、网页尚未完成的功能和 ron 桌面能力不会因开源而改写为通过。
+
+---
 # MO State 管理界面验证
 
 2026-10-11。Web 基线 62f2d99d24b15d3786068d48e321cc55e360195b；Core main 174cba356590fb7a1e8130296afb4c54be53f284。按 [0015](decisions/0015-mo-state-management.md) 实施，App、ron 未修改。

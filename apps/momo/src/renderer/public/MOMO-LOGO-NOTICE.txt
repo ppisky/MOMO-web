@@ -1,0 +1,13 @@
+MOMO overlapping-circle logo and simplified version
+Copyright MOMO project (ppisky and contributors)
+
+momo.svg and favicon.ico are licensed under Creative Commons
+Attribution-ShareAlike 4.0 International (CC BY-SA 4.0).
+Source: https://github.com/ppisky/MOMO-core/tree/main/assets/brand
+License: https://creativecommons.org/licenses/by-sa/4.0/
+The full legal code is included as MOMO-LOGO-LICENSE.txt.
+
+The original artwork was supplied by the project maintainers. The simplified
+SVG retains the overlapping circles and removes the background and lighting.
+Retain attribution, license information and modification notices when sharing.
+This notice does not relicense the GPL-3.0 source or third-party assets.

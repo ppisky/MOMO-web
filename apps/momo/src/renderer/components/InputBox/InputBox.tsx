@@ -139,7 +139,7 @@ const InputBox = forwardRef<InputBoxRef, InputBoxProps>(
                 isNewSession={sessionId === 'new'}
                 viewportHeight={height}
                 isReadOnly={false}
-                placeholder={t('Write dialogue, or describe your response with *actions*…')}
+                placeholder={t('Enter a message…')}
                 ariaLabel={t('Message input')}
                 autoFocus
                 onValueChange={onValueChange}
