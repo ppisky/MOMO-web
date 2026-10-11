@@ -3,8 +3,8 @@
 This PoC checks whether a model uses session attachment retrieval tools when a user question depends on an uploaded
 file, and avoids retrieval when the question is unrelated.
 
-For the reusable agent workflow, see `scripts/session-rag-eval/SKILL.md`. For technical context and debugging notes, see
-`docs/technical/session-attachment-rag-eval.md`.
+For the reusable evaluation workflow, see [SKILL.md](SKILL.md). Technical context and debugging notes are available in the
+[Chatbox evaluation documentation](https://github.com/chatboxai/chatbox/blob/0ac6385ae1ff5bf778777826da3c5edcd55b61b8/docs/technical/session-attachment-rag-eval.md).
 
 The fixture documents live in a separate local repository by default:
 

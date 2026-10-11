@@ -1,5 +1,5 @@
-# Error handling and Sentry
+# Error handling
 
-The current error-reporting architecture, classification, sampling, deduplication, and privacy rules are documented in [`docs/technical/sentry-error-reporting.md`](docs/technical/sentry-error-reporting.md).
+Product HTTP handlers return structured errors; the browser validates responses before displaying a message. Streaming errors, cancellations and completed responses have distinct terminal states. Retrying a request must preserve its identity and avoid persisting duplicate messages. See [architecture](../../docs/architecture.md).
 
-The Sentry SDK owns global browser error and unhandled-rejection capture. Do not add parallel `window` listeners or intercept `console.error`; explicit handled failures should use `reportError()` with stable domain and operation tags.
+Do not include API keys, private prompts or local file paths in browser-facing errors. MOMO does not enable the upstream telemetry service. For the shared component library's upstream reporting design, see [Chatbox documentation](https://github.com/chatboxai/chatbox/blob/0ac6385ae1ff5bf778777826da3c5edcd55b61b8/docs/technical/sentry-error-reporting.md).
